@@ -59,9 +59,13 @@ async function authorize() {
 function transformarProducto(book) {
   const info = book.volumeInfo || {};
 
-  let precioCRC = Math.floor(Math.random() * (25000 - 4000) + 4000);
+  console.log(info.title, "-> language real:", info.language);
+
+  let precioCRC = Math.floor(Math.random() * (25000 - 4000 + 1) + 4000);
   precioCRC = Math.round(precioCRC / 5) * 5;
   precioCRC = parseFloat(precioCRC.toFixed(2));
+
+  let randomPageCount = Math.floor(Math.random () * (500 - 200 + 200) + 200);
 
   return {
     objectID: book.id,
@@ -72,7 +76,7 @@ function transformarProducto(book) {
       category: info.categories ? info.categories[0] : "General",
       publisher: info.publisher || "Editorial desconocida",
       language: info.language || "es",
-      pageCount: info.pageCount || 0,
+      pageCount: info.pageCount || randomPageCount,
       publishedDate: info.publishedDate || "Fecha desconocida",
       isbn_13: info.industryIdentifiers
         ? info.industryIdentifiers.find(id => id.type === "ISBN_13")?.identifier
