@@ -13,6 +13,8 @@
   "dependencies": {
     "algoliasearch": "^5.57.0",
     "dotenv": "^17.4.2",
+    "fs": "^0.0.1-security",
+    "googleapis": "^178.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3"
@@ -31,5 +33,4 @@
     "typescript-eslint": "^8.67.0",
     "vite": "^8.2.2"
   }
-  
 }
