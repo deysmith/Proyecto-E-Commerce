@@ -8,7 +8,7 @@ export default function DetailPage() {
 
   return (
     <>
-      <h1>Página 2</h1>
+      <h1>Proximamente</h1>
       <button 
         onClick={prueba}>
           Volver
