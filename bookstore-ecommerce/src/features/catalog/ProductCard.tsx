@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import type { Hit } from "instantsearch.js"
 import type { ProductRecord } from "../../types/productRecord"
 import { formatPrice } from "../../utils/formatPrice"
@@ -8,7 +9,7 @@ interface ProductCardProps {
 
 export function ProductCard({ hit }: ProductCardProps) {
   return (
-    <article className="product-card">
+    <Link to={`/producto/${hit.objectID}`} className="product-card">
       <div className="product-card__cover">
         <img
           src={hit.productInfo.image_url}
@@ -32,6 +33,6 @@ export function ProductCard({ hit }: ProductCardProps) {
           {formatPrice(hit.pricing.price_crc)}
         </strong>
       </div>
-    </article>
+    </Link>
   )
 }
