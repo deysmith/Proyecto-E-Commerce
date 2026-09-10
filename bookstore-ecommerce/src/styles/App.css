@@ -26,6 +26,7 @@
 
 .brand-mark { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .03em; color: var(--color-primary); }
 .brand-mark__symbol { display: grid; place-items: center; width: 29px; height: 29px; background: var(--color-accent); color: var(--color-primary); border-radius: 50%; font-family: Georgia, serif; font-size: 19px; }
+.brand-mark__text { font-size: 19px; font-family: Fraunces, Georgia, serif; background: transparent; border: none; color: var(--color-primary); cursor: pointer; }
 
 .catalog-header nav { display: flex; gap: 30px; }
 .catalog-header nav a { color: var(--color-text-muted); text-decoration: none; font-size: 13px; }
@@ -82,7 +83,7 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .product-grid { width: 100%; max-width: 100%; min-width: 0; }
 .product-grid .ais-Hits { width: 100%; max-width: 100%; min-width: 0; }
 .product-grid .ais-Hits-list { width: 100%; max-width: 100%; min-width: 0; padding: 0; margin: 0; list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 18px; align-items: stretch; }
-.product-card { display: flex; flex-direction: column; height: 100%; min-width: 0; background: var(--color-surface); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: inherit; }
+.product-card { display: flex; flex-direction: column; height: 100%; min-width: 0; background: var(--color-surface); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: inherit; perspective: 1200px; }
 .product-card__cover { aspect-ratio: .78; overflow: hidden; background: var(--color-cover-placeholder); border-radius: 16px 16px 0 0; }
 .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(4, 71, 75, 0.16); }
 .product-card__cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .45s ease; }
@@ -93,6 +94,17 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .product-card h3 { min-height: 42px; margin: 0; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 500; line-height: 1.1; }
 .product-card__author { margin: 7px 0 18px; color: var(--color-text-muted); font-size: 12px; }
 .product-card strong { margin-top: auto; color: var(--color-primary); font-size: 13px; }
+
+.product-card__flip { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+.product-card:hover .product-card__flip { transform: rotateY(180deg); }
+.product-card__face { position: relative; display: flex; flex-direction: column; height: 100%; min-width: 0; backface-visibility: hidden; }
+.product-card__face--front { position: relative; }
+.product-card__face--back { position: absolute; inset: 0; transform: rotateY(180deg); padding: 18px 16px; border-radius: 16px; background: var(--color-primary); color: var(--color-on-primary); overflow: hidden; }
+.product-card__face--back .product-card__category { color: var(--color-accent); }
+.product-card__face--back h3 { color: var(--color-on-primary); font-size: 17px; min-height: auto; margin-bottom: 10px; }
+.product-card__description { margin: 0 0 12px; color: var(--color-bg); font-size: 12px; line-height: 1.5; overflow: hidden; display: -webkit-box; line-clamp: 5; -webkit-line-clamp: 5; -webkit-box-orient: vertical; }
+.product-card__extra { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; color: var(--color-accent-soft); font-size: 11px; }
+.product-card__back-price { margin-top: auto; color: var(--color-on-primary); font-size: 14px; }
 
 .catalog-footer { display: flex; justify-content: space-between; padding-top: 20px; padding-bottom: 28px; border-top: 1px solid var(--color-border); color: var(--color-text-faint); font-size: 11px; }
 

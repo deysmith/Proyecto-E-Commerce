@@ -1,9 +1,10 @@
 export function Header() {
   return (
+    // Quiero que booksmart sea un boton y que al presionarlo me lleve a la pagina principal
     <header className="catalog-header">
       <div className="brand-mark">
-        <span className="brand-mark__symbol">B</span>
-        <span>Booksmart</span>
+        <button className="brand-mark__symbol" onClick={() => window.location.href = '/'}>B</button>
+        <button className="brand-mark__text" onClick={() => window.location.href = '/'}>Booksmart</button>
       </div>
       <nav aria-label="Navegación principal">
         <a href="#catalogo">Catálogo</a>
