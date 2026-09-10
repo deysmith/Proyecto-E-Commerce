@@ -1,6 +1,13 @@
 import { Hits, Pagination, useInstantSearch  } from "react-instantsearch"
 import { ProductCard } from "./ProductCard"
 
+/**
+ * Componente encargado de mostrar los resultados del catálogo, calcular
+ * el rango de productos visibles y gestionar la páginación
+ * 
+ * @returns La zona de resultados con los productos encontrados o un mensaje 
+ *          si no se encontraron productos.
+ */
 export function CatalogResults() {
   const { results } = useInstantSearch()
   const { nbHits, page, hitsPerPage } = results

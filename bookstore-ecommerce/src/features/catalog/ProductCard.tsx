@@ -3,10 +3,20 @@ import type { Hit } from "instantsearch.js"
 import type { ProductRecord } from "../../types/productRecord"
 import { formatPrice } from "../../utils/formatPrice"
 
+/**
+ * Las propiedades necesarias para el componente ProductCard
+ */
 interface ProductCardProps {
   hit: Hit<ProductRecord>
 }
 
+/**
+ * Componente encargado de mostrar la información de un producto dentro de un
+ * catálogo y permitir la navegación hacia su página de detalle.
+ * @param hit - Información del producto obtenida mediante Algolia 
+ * @returns Una tarjeta visual con la información principal (título, autor, 
+ *          precio e imagen) del producto.
+ */
 export function ProductCard({ hit }: ProductCardProps) {
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
