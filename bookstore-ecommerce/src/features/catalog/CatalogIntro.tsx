@@ -1,6 +1,12 @@
 import { useState } from "react"
 import { Configure, SearchBox } from "react-instantsearch"
 
+/**
+ * Se encarga de mostrar la introducción del catálogo, proporcioanr el campo
+ * de búsqueda y permitir activar y desactivar la búsqueda exacta.
+ * 
+ * @returns Sección de introducción del catálogo.
+ */
 export function CatalogIntro() {
   const [exactSearch, setExactSearch] = useState(false)
   
