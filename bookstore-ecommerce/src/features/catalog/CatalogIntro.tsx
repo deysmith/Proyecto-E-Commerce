@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Configure, SearchBox } from "react-instantsearch"
+import { SearchQuerySync } from "./SearchQuerySync"
 
 /**
  * Se encarga de mostrar la introducción del catálogo, proporcioanr el campo
@@ -9,10 +10,12 @@ import { Configure, SearchBox } from "react-instantsearch"
  */
 export function CatalogIntro() {
   const [exactSearch, setExactSearch] = useState(false)
-  
+
   return (
     <section className="catalog-intro" id="catalogo">
-      <div>
+      <SearchQuerySync />
+
+      <div className="catalog-intro__hero">
         <p className="eyebrow">Librería</p>
 
         <h1>
@@ -45,7 +48,6 @@ export function CatalogIntro() {
         >
           Búsqueda exacta {exactSearch ? "activada" : "desactivada"}
         </button>
-
       </div>
 
       <Configure typoTolerance={!exactSearch} />
