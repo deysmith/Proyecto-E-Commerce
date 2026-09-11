@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Hits, Pagination, useInstantSearch  } from "react-instantsearch"
 import { ProductCard } from "./ProductCard"
 
@@ -29,6 +29,20 @@ export function CatalogResults() {
 
   const rangeStart = page * hitsPerPage + 1
   const rangeEnd = Math.min((page + 1) * hitsPerPage, nbHits)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const isFirstRender = useRef(true)
+
+    useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    toolbarRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }, [page])
 
   useEffect(() => {
     function handleResize() {
@@ -50,7 +64,7 @@ export function CatalogResults() {
         </div>
       ) : (
         <>
-          <div className="results-toolbar">
+          <div className="results-toolbar" ref={toolbarRef}>
             <p>Todos nuestros libros</p>
 
             <p className="results-count"> 
