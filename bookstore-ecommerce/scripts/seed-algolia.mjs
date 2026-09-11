@@ -29,8 +29,7 @@ async function indexarEnAlgolia(productos) {
       searchableAttributes: [
         "productInfo.title",
         "productInfo.author",
-        "productInfo.publisher",
-        "productInfo.description"
+        "productInfo.publisher"
       ],
       attributesForFaceting: [
         "searchable(facets.category)",
