@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { RangeInput, useClearRefinements } from "react-instantsearch"
 import { PaginatedRefinementList } from "./PaginatedRefinementList"
+import { translateLanguage } from "../../utils/language"
+import { useTranslation } from "react-i18next"
 
 /**
  * Componente encargado de mostrar y organizar los filtros disponibles para 
@@ -10,6 +12,7 @@ import { PaginatedRefinementList } from "./PaginatedRefinementList"
  * y precio.
  */
 export function CatalogFilters() {
+  const { t } = useTranslation()
   const { canRefine, refine } = useClearRefinements()
   const [filtersOpen, setFiltersOpen] = useState(false)
 
@@ -47,6 +50,11 @@ export function CatalogFilters() {
           <PaginatedRefinementList
             attribute="facets.category"
             itemsPerPage={10}
+            translatedItem={(item) =>
+              t(`categories.${item.value}`, {
+                defaultValue: item.label
+              })
+            }
           />
         </div>
 
@@ -62,7 +70,7 @@ export function CatalogFilters() {
           <h3>Lenguaje</h3>
           <PaginatedRefinementList
             attribute="facets.language"
-            itemsPerPage={10}
+            translatedItem={(item) => translateLanguage(item.value)}
           />
         </div>
 

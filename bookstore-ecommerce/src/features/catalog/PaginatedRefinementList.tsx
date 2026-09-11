@@ -4,6 +4,12 @@ import { useRefinementList } from "react-instantsearch"
 interface PaginatedRefinementListProps {
   attribute: string
   itemsPerPage?: number
+  translatedItem?: (item: {
+    value: string
+    label: string
+    count: number
+    isRefined: boolean
+  }) => string
 }
 
 type PageItem = number | "ellipsis-start" | "ellipsis-end"
@@ -72,9 +78,10 @@ function buildPageList(current: number, total: number, maxVisible: number): Page
  *
  * @param attribute Atributo de Algolia utilizado para realizar el filtrado.
  * @param itemsPerPage Cantidad de opciones mostradas por página.
+ * @param translatedItem Se utiliza para traducir las categorías
  * @returns Lista de opciones de filtrado con controles de paginación.
  */
-export function PaginatedRefinementList({ attribute, itemsPerPage = 10
+export function PaginatedRefinementList({ attribute, itemsPerPage = 10, translatedItem
   }: PaginatedRefinementListProps) {
     
   const { items, refine } = useRefinementList({
@@ -140,7 +147,7 @@ export function PaginatedRefinementList({ attribute, itemsPerPage = 10
               />
 
               <span className="ais-RefinementList-labelText">
-                {item.label}
+                {translatedItem ? translatedItem(item) : item.label}
               </span>
 
               <span className="ais-RefinementList-count">

@@ -2,6 +2,8 @@ import { Link } from "react-router-dom"
 import type { Hit } from "instantsearch.js"
 import type { ProductRecord } from "../../types/productRecord"
 import { formatPrice } from "../../utils/formatPrice"
+import { translateLanguage } from "../../utils/language"
+import { useTranslation } from "react-i18next"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -18,6 +20,7 @@ interface ProductCardProps {
  *          precio e imagen) del producto.
  */
 export function ProductCard({ hit }: ProductCardProps) {
+  const { t } = useTranslation()
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
       <div className="product-card__flip">
@@ -33,7 +36,9 @@ export function ProductCard({ hit }: ProductCardProps) {
 
           <div className="product-card__body">
             <p className="product-card__category">
-              {hit.facets.category}
+              {t(`categories.${hit.facets.category}`, {
+                defaultValue: hit.facets.category
+              })}
             </p>
 
             <h3>{hit.productInfo.title}</h3>
@@ -50,7 +55,9 @@ export function ProductCard({ hit }: ProductCardProps) {
 
         <div className="product-card__face product-card__face--back">
           <p className="product-card__category">
-            {hit.facets.category}
+            {t(`categories.${hit.facets.category}`, {
+                defaultValue: hit.facets.category
+            })}
           </p>
 
           <h3>{hit.productInfo.title}</h3>
@@ -69,7 +76,7 @@ export function ProductCard({ hit }: ProductCardProps) {
             {hit.productInfo.publisher && (
               <span>{hit.productInfo.publisher}</span>
             )}
-            <span>{hit.facets.language}</span>
+            <span>Idioma: {translateLanguage(hit.facets.language)}</span>
           </div>
 
           <strong className="product-card__back-price">
