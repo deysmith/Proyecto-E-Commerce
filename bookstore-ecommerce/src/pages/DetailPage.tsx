@@ -4,13 +4,17 @@ import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 import { fetchProductById } from "../services/algoliaService"
 import { formatPrice } from "../utils/formatPrice"
+import { useTranslation } from "react-i18next"
 import type { ProductRecord } from "../types/productRecord"
+import { translateLanguage } from "../utils/language"
+
 
 /**
  * Página que se encarga de mostrar el detalle de un producto seleccionado
  */
 export default function DetailPage() {
   const { id } = useParams()
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [product, setProduct] = useState<ProductRecord | null>(null)
@@ -114,38 +118,40 @@ export default function DetailPage() {
 
                     {product.productInfo.publisher && (
                       <span>
-                        <strong>Editorial:</strong>{" "}
+                        <strong>Editorial: </strong>
                         {product.productInfo.publisher}
                       </span>
                     )}
 
                     <span>
-                      <strong>Idioma:</strong>{" "}
-                      {product.facets.language}
+                      <strong>Idioma: </strong>
+                      {translateLanguage(product.facets.language)}
                     </span>
 
                     <span>
-                      <strong>Categoría:</strong>{" "}
-                      {product.facets.category}
+                      <strong>Categoría: </strong>
+                      {t(`categories.${product.facets.category}`, {
+                        defaultValue: product.facets.category
+                      })}
                     </span>
 
                     {product.productInfo.pageCount && (
                       <span>
-                        <strong>Páginas:</strong>{" "}
+                        <strong>Páginas: </strong>
                         {product.productInfo.pageCount}
                       </span>
                     )}
 
                     {product.productInfo.publishedDate && (
                       <span>
-                        <strong>Fecha de publicación:</strong>{" "}
+                        <strong>Fecha de publicación: </strong>
                         {product.productInfo.publishedDate}
                       </span>
                     )}
 
                     {product.productInfo.isbn_13 && (
                       <span>
-                        <strong>ISBN-13:</strong>{" "}
+                        <strong>ISBN-13: </strong>
                         {product.productInfo.isbn_13}
                       </span>
                     )}
