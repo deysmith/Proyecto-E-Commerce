@@ -1,9 +1,70 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRefinementList } from "react-instantsearch"
 
 interface PaginatedRefinementListProps {
   attribute: string
   itemsPerPage?: number
+}
+
+type PageItem = number | "ellipsis-start" | "ellipsis-end"
+
+/**
+ * Calcula cuántos botones de número de página se deben mostrar
+ * según el ancho actual de la ventana.
+ */
+function getMaxVisiblePages() {
+  const width = window.innerWidth
+
+  if (width <= 540) return 1
+  if (width <= 785) return 5
+
+  return 7
+}
+
+/**
+ * Arma la lista de páginas a mostrar, agregando "..." cuando
+ * hay páginas ocultas entre el inicio, el actual y el final.
+ */
+function buildPageList(current: number, total: number, maxVisible: number): PageItem[] {
+  if (total <= maxVisible + 2) {
+    return Array.from({ length: total }, (_, index) => index + 1)
+  }
+
+  const half = Math.floor(maxVisible / 2)
+
+  let start = current - half
+  let end = current + half
+
+  if (start < 2) {
+    end += 2 - start
+    start = 2
+  }
+
+  if (end > total - 1) {
+    start -= end - (total - 1)
+    end = total - 1
+  }
+
+  start = Math.max(start, 2)
+  end = Math.min(end, total - 1)
+
+  const pages: PageItem[] = [1]
+
+  if (start > 2) {
+    pages.push("ellipsis-start")
+  }
+
+  for (let page = start; page <= end; page++) {
+    pages.push(page)
+  }
+
+  if (end < total - 1) {
+    pages.push("ellipsis-end")
+  }
+
+  pages.push(total)
+
+  return pages
 }
 
 /**
@@ -22,6 +83,10 @@ export function PaginatedRefinementList({ attribute, itemsPerPage = 10
   })
 
   const [currentPage, setCurrentPage] = useState(1)
+  const [maxVisiblePages, setMaxVisiblePages] = useState(getMaxVisiblePages)
+
+  const listRef = useRef<HTMLUListElement>(null)
+  const isFirstRender = useRef(true)
 
   const totalPages = Math.ceil(items.length / itemsPerPage)
 
@@ -32,9 +97,35 @@ export function PaginatedRefinementList({ attribute, itemsPerPage = 10
     startIndex + itemsPerPage
   )
 
+  const pageList = buildPageList(currentPage, totalPages, maxVisiblePages)
+
+  useEffect(() => {
+    function handleResize() {
+      setMaxVisiblePages(getMaxVisiblePages())
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    listRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    })
+  }, [currentPage])
+
   return (
     <>
-      <ul className="ais-RefinementList-list">
+      <ul
+        ref={listRef}
+        className="ais-RefinementList-list"
+      >
         {currentItems.map((item) => (
           <li
             key={item.value}
@@ -71,19 +162,25 @@ export function PaginatedRefinementList({ attribute, itemsPerPage = 10
             ‹
           </button>
 
-          {Array.from(
-            { length: totalPages },
-            (_, index) => index + 1
-          ).map((page) => (
-            <button
-              type="button"
-              key={page}
-              className={currentPage === page ? "active" : ""}
-              onClick={() => setCurrentPage(page)}
-            >
-              {page}
-            </button>
-          ))}
+          {pageList.map((item) =>
+            typeof item === "number" ? (
+              <button
+                type="button"
+                key={item}
+                className={currentPage === item ? "active" : ""}
+                onClick={() => setCurrentPage(item)}
+              >
+                {item}
+              </button>
+            ) : (
+              <span
+                key={item}
+                className="filter-pagination__ellipsis"
+              >
+                …
+              </span>
+            )
+          )}
 
           <button
             type="button"

@@ -1,6 +1,5 @@
 export function Header() {
   return (
-    // Quiero que booksmart sea un boton y que al presionarlo me lleve a la pagina principal
     <header className="catalog-header">
       <div className="brand-mark">
         <button className="brand-mark__symbol" onClick={() => window.location.href = '/'}>B</button>
