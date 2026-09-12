@@ -78,7 +78,9 @@ export default function DetailPage() {
               <div className="detail-info">
 
                 <p className="detail-category">
-                  {product.facets.category}
+                  {t(`categories.${product.facets.category}`, {
+                        defaultValue: product.facets.category
+                  })}
                 </p>
 
                 <h1>

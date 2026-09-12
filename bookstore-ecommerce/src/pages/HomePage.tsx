@@ -1,4 +1,4 @@
-import { Configure, InstantSearch } from "react-instantsearch"
+import { Configure } from "react-instantsearch"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 import { searchClient } from "../services/algoliaService"
@@ -13,28 +13,19 @@ export default function HomePage() {
   return (
     <div className="catalog-shell">
       <Header />
+      <Configure
+        hitsPerPage={12}
+        typoTolerance={true}
+      />
+      <main>
+        <CatalogIntro />
+        <section className="catalog-content">
+          <CatalogFilters />
+          <CatalogResults />
+        </section>
+      </main>
 
-      <InstantSearch
-        searchClient={searchClient}
-        indexName={import.meta.env.VITE_INDEX_NAME}
-      >
-        <Configure 
-          hitsPerPage={12} 
-          typoTolerance={true}
-        />
-
-        <main>
-          <CatalogIntro />
-
-          <section className="catalog-content">
-            <CatalogFilters />
-
-            <CatalogResults />
-          </section>
-        </main>
-
-        <Footer />
-      </InstantSearch>
+      <Footer />
     </div>
   )
 }
