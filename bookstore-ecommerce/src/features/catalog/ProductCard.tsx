@@ -28,6 +28,7 @@ export function ProductCard({ hit }: ProductCardProps) {
         <div className="product-card__face product-card__face--front">
           <div className="product-card__cover">
             <img
+              className="product-image"
               src={hit.productInfo.image_url}
               alt={`Portada de ${hit.productInfo.title}`}
               loading="lazy"

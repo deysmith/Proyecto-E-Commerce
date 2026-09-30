@@ -20,7 +20,7 @@ export function CatalogFilters() {
     <aside className="filters" aria-label="Filtros del catálogo">
 
       <div className="filters__heading">
-        <h2>Explorar</h2>
+        <h2>Filtros</h2>
 
         <button
           type="button"

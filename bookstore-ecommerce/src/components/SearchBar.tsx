@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react"
-import type { FormEvent } from "react"
-import { useNavigate } from "react-router-dom"
-import { Configure, useSearchBox } from "react-instantsearch"
-import type { ProductRecord } from "../types/productRecord"
-import { fetchSearchSuggestions } from "../services/algoliaService"
-import { addRecentSearch, getRecentSearches } from "../utils/recentSearches"
-import { formatPrice } from "../utils/formatPrice"
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { SearchBox, useSearchBox } from "react-instantsearch";
+import type { ProductRecord } from "../types/productRecord";
+import { fetchSearchSuggestions } from "../services/algoliaService";
+import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
+import { formatPrice } from "../utils/formatPrice";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -22,7 +21,6 @@ export function SearchBar() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-
     function handleClickOutside(event: MouseEvent) {
       if (
         containerRef.current &&
@@ -52,6 +50,10 @@ export function SearchBar() {
   function openDropdown() {
     setRecentSearches(getRecentSearches())
     setIsOpen(true)
+  }
+
+  function closeDropdown() {
+    setIsOpen(false)
   }
 
   function runSearch(term: string) {
@@ -95,29 +97,19 @@ export function SearchBar() {
         className="header-search__box"
         onSubmit={handleSubmit}
       >
-
-        <input
-          type="text"
-          value={query}
+        <SearchBox
           placeholder="Buscar título, autor o editorial"
-          onChange={(event) => setQuery(event.target.value)}
           onFocus={openDropdown}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              closeDropdown()
+            }
+          }}
           aria-label="Buscar en el catálogo"
         />
-        <button type="submit" aria-label="Buscar">
-          🔎︎
-        </button>
+
       </form>
-      {/* <button
-        type="button"
-        className={`exact-search-toggle ${
-          exactSearch ? "is-active" : ""
-        }`}
-        onClick={() => setExactSearch((prev) => !prev)}
-      >
-        Búsqueda exacta {exactSearch ? "activada" : "desactivada"}
-      </button> */}
-      <Configure typoTolerance={!exactSearch} />
+
       {(showRecent || showSuggestions) && (
         <div className="header-search__dropdown">
           {showRecent && (
