@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react"
-import type { FormEvent } from "react"
-import { useNavigate } from "react-router-dom"
-import { Configure, useSearchBox } from "react-instantsearch"
-import type { ProductRecord } from "../types/productRecord"
-import { fetchSearchSuggestions } from "../services/algoliaService"
-import { addRecentSearch, getRecentSearches } from "../utils/recentSearches"
-import { formatPrice } from "../utils/formatPrice"
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { SearchBox, useClearRefinements, useSearchBox } from "react-instantsearch";
+import type { ProductRecord } from "../types/productRecord";
+import { fetchSearchSuggestions } from "../services/algoliaService";
+import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
+import { formatPrice } from "../utils/formatPrice";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -13,16 +12,15 @@ import { formatPrice } from "../utils/formatPrice"
  */
 export function SearchBar() {
   const navigate = useNavigate()
-  const { refine } = useSearchBox()
+  const { query: algoliaQuery, refine } = useSearchBox()
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<ProductRecord[]>([])
   const [recentSearches, setRecentSearches] = useState<string[]>([])
-  const [exactSearch, setExactSearch] = useState(false)
+  const { refine: clearRefinements } = useClearRefinements()
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-
     function handleClickOutside(event: MouseEvent) {
       if (
         containerRef.current &&
@@ -45,10 +43,14 @@ export function SearchBar() {
 
     const timeoutId = setTimeout(() => {
       fetchSearchSuggestions(query).then(setSuggestions)
-    }, 250)
+    }, 100)
     return () => clearTimeout(timeoutId)
   }, [query])
 
+  useEffect(() => {
+    setQuery(algoliaQuery)
+  }, [algoliaQuery])
+  
   function openDropdown() {
     setRecentSearches(getRecentSearches())
     setIsOpen(true)
@@ -58,6 +60,7 @@ export function SearchBar() {
     const trimmed = term.trim()
     if (!trimmed) return
 
+    clearRefinements()
     addRecentSearch(trimmed)
     refine(trimmed)
     setQuery(trimmed)
@@ -73,11 +76,6 @@ export function SearchBar() {
     navigate(`/producto/${hit.objectID}`)
   }
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    runSearch(query)
-  }
-
   const showRecent =
     isOpen &&
     query.trim() === "" &&
@@ -91,33 +89,18 @@ export function SearchBar() {
   return (
     <div className="header-search" ref={containerRef}>
 
-      <form
-        className="header-search__box"
-        onSubmit={handleSubmit}
-      >
-
-        <input
-          type="text"
-          value={query}
+      <div className="header-search__box">
+        <SearchBox
           placeholder="Buscar título, autor o editorial"
-          onChange={(event) => setQuery(event.target.value)}
           onFocus={openDropdown}
+          onSubmit={() => {
+            runSearch(query)
+          }}
           aria-label="Buscar en el catálogo"
         />
-        <button type="submit" aria-label="Buscar">
-          🔎︎
-        </button>
-      </form>
-      {/* <button
-        type="button"
-        className={`exact-search-toggle ${
-          exactSearch ? "is-active" : ""
-        }`}
-        onClick={() => setExactSearch((prev) => !prev)}
-      >
-        Búsqueda exacta {exactSearch ? "activada" : "desactivada"}
-      </button> */}
-      <Configure typoTolerance={!exactSearch} />
+
+      </div>
+
       {(showRecent || showSuggestions) && (
         <div className="header-search__dropdown">
           {showRecent && (

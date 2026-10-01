@@ -45,11 +45,14 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .catalog-intro__copy { max-width: 290px; margin: 25px 0 0; color: var(--color-text-muted); font-size: 15px; line-height: 1.55; }
 .catalog-intro__hero { max-width: 460px; margin-bottom: 50px; }
 
-.header-search { position: relative; flex: 1; max-width: 420px; margin: 0 24px; }
-.header-search__box { display: flex; align-items: center; height: 42px; border: 1px solid var(--color-accent-soft); border-radius: 999px; background: var(--color-surface); overflow: hidden; }
-.header-search__box input { flex: 1; height: 100%; padding: 0 16px; border: 0; outline: none; background: transparent; color: var(--color-primary); font-size: 13px; }
-.header-search__box button { width: 40px; height: 100%; border: 0; background: transparent; color: var(--color-accent-strong); font-size: 15px; cursor: pointer; }
+.header-search { position: relative; flex: 1; max-width: 40%; margin: 0 24px; }
+.header-search__box { display: flex; align-items: center; width: 100%; height: 42px; border: 1px solid var(--color-accent-soft); border-radius: 999px; background: var(--color-surface); overflow: hidden; }
+.header-search__box .ais-SearchBox { width: 100%; height: 100%; }
+.header-search__box .ais-SearchBox-form { display: flex; align-items: center; width: 100%; height: 100%; margin: 0; }
+.header-search__box .ais-SearchBox-input { flex: 1; width: 100%; height: 100%; padding: 0 16px; border: 0; outline: none; background: transparent; color: var(--color-primary); font-size: 13px; }
+.header-search__box .ais-SearchBox-submit { width: 40px; height: 100%; border: 0; background: transparent; color: var(--color-accent-strong); cursor: pointer; }
 
+.header-search__box .ais-SearchBox-reset { display: none; }
 .header-search__dropdown { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 40; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px; box-shadow: 0 12px 28px rgba(4, 71, 75, 0.16); padding: 10px; max-height: 420px; overflow-y: auto; }
 .header-search__section-title { margin: 4px 10px 8px; color: var(--color-text-faint); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 
@@ -66,9 +69,6 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .header-search__suggestion-info strong { color: var(--color-primary); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .header-search__suggestion-info span { color: var(--color-text-muted); font-size: 11px; }
 .header-search__suggestion-price { color: var(--color-primary); font-size: 12px; font-weight: 700; flex-shrink: 0; }
-
-/* .exact-search-toggle { margin-top: 10px; padding: 6px 12px; border: 1px solid var(--color-accent-soft); border-radius: 6px; background: transparent; color: var(--color-text-muted); font-size: 12px; cursor: pointer; }
-.exact-search-toggle.is-active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); } */
 
 .catalog-count { margin: 13px 0 0; color: var(--color-text-faint); font-size: 12px; }
 .catalog-content { display: grid; grid-template-columns: 220px 1fr; gap: clamp(35px, 6vw, 90px); padding-bottom: 80px; }
@@ -100,15 +100,16 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .results-toolbar p { margin: 0; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: 22px; }
 .results-toolbar span { color: var(--color-text-faint); font-size: 11px; }
 .results-toolbar .results-count { margin: 0; color: var(--color-text-faint); font-family: inherit; font-size: 12px; font-weight: 400; }
-.no-results { justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 1px solid var(--color-primary); padding-top: 18px; }
-
+.no-results { width: 100%; box-sizing: border-box; margin-bottom: 20px; border-top: 1px solid var(--color-primary); padding-top: 18px; }
 .product-grid { width: 100%; max-width: 100%; min-width: 0; }
 .product-grid .ais-Hits { width: 100%; max-width: 100%; min-width: 0; }
 .product-grid .ais-Hits-list { width: 100%; max-width: 100%; min-width: 0; padding: 0; margin: 0; list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 18px; align-items: stretch; }
 .product-card { display: flex; flex-direction: column; height: 100%; min-width: 0; background: var(--color-surface); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: inherit; perspective: 1200px; }
 .product-card__cover { aspect-ratio: .78; overflow: hidden; background: var(--color-cover-placeholder); border-radius: 16px 16px 0 0; }
 .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(4, 71, 75, 0.16); }
-.product-card__cover img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .45s ease; }
+
+.product-card__cover { width: 100%; height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.product-image { width: 100%; height: 100%; object-fit: cover; }
 
 .product-card:hover .product-card__cover img { transform: scale(1.04); }
 .product-card__body { display: flex; flex-direction: column; flex: 1; padding: 16px 16px 18px; }
@@ -150,8 +151,8 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 
 .detail-card { background: var(--color-surface); border-radius: 20px; padding: 40px; }
 .detail-content { display: grid; grid-template-columns: 320px 1fr; gap: 50px; }
-.detail-cover { border-radius: 16px; overflow: hidden; background: var(--color-cover-placeholder); aspect-ratio: .78; }
-.detail-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-cover { border-radius: 16px; overflow: hidden; background: var(--color-cover-placeholder); aspect-ratio: .70; }
+.detail-cover img { width: 100%; height: 100%; }
 
 .detail-category { margin: 0 0 10px; color: var(--color-accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .detail-info h1 { font-size: clamp(28px, 3.5vw, 42px); line-height: 1.05; color: var(--color-primary); }
