@@ -1,39 +1,41 @@
+import { RefinementList, RangeInput, useClearRefinements } from "react-instantsearch"
 import { useState } from "react"
-import { RangeInput, useClearRefinements } from "react-instantsearch"
-import { PaginatedRefinementList } from "./PaginatedRefinementList"
-import { translateLanguage } from "../../utils/language"
-import { useTranslation } from "react-i18next"
 
-/**
- * Componente encargado de mostrar y organizar los filtros disponibles para 
- * el catálogo de productos.
- *
- * @returns un panel lateral con filtros de categoría, editorial, lenguaje 
- * y precio.
- */
+// const CATEGORY_TRANSLATIONS: Record<string, string> = {
+//   "Juvenile Fiction": "Ficción Juvenil",
+//   "Fiction": "Ficción",
+//   "Juvenile Nonfiction": "No Ficción Juvenil",
+//   "Science": "Ciencia",
+//   "Young Adult Fiction": "Ficción Adulto Joven",
+// }
+
 export function CatalogFilters() {
-  const { t } = useTranslation()
   const { canRefine, refine } = useClearRefinements()
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <aside className="filters" aria-label="Filtros del catálogo">
+    <aside
+      className="filters"
+      aria-label="Filtros del catálogo"
+    >
+      <button
+        type="button"
+        className="filters__toggle"
+        aria-expanded={isOpen}
+        aria-controls="catalog-filter-panel"
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span>Filtros del catálogo</span>
+        <span className="filters__toggle-icon" aria-hidden="true" />
+      </button>
 
-      <div className="filters__heading">
-        <h2>Filtros</h2>
-
-        <button
-          type="button"
-          className="filters-toggle"
-          onClick={() => setFiltersOpen(!filtersOpen)}
-          aria-expanded={filtersOpen}
-          aria-label={filtersOpen ? "Cerrar filtros" : "Abrir filtros"}
-        >
-          {filtersOpen ? "−" : "+"}
-        </button>
-      </div>
-
-      <div className={`filters__content ${filtersOpen ? "is-open" : ""}`}>
+      <div
+        id="catalog-filter-panel"
+        className={`filters__panel${isOpen ? " filters__panel--open" : ""}`}
+      >
+        <div className="filters__heading">
+          <h2>Explorar</h2>
+        </div>
 
         {canRefine && (
           <button
@@ -47,31 +49,21 @@ export function CatalogFilters() {
 
         <div className="filter-group">
           <h3>Categoría</h3>
-          <PaginatedRefinementList
+          <RefinementList
             attribute="facets.category"
-            itemsPerPage={10}
-            translatedItem={(item) =>
-              t(`categories.${item.value}`, {
-                defaultValue: item.label
-              })
-            }
+            // transformItems={(items) =>
+            //   items.map((item) => ({ ...item, label: CATEGORY_TRANSLATIONS[item.label] ?? item.label, }))}
           />
         </div>
 
         <div className="filter-group">
           <h3>Editorial</h3>
-          <PaginatedRefinementList
-            attribute="facets.publisher"
-            itemsPerPage={10}
-          />
+          <RefinementList attribute="facets.publisher" />
         </div>
 
         <div className="filter-group">
           <h3>Lenguaje</h3>
-          <PaginatedRefinementList
-            attribute="facets.language"
-            translatedItem={(item) => translateLanguage(item.value)}
-          />
+          <RefinementList attribute="facets.language" />
         </div>
 
         <div className="filter-group">
@@ -79,11 +71,10 @@ export function CatalogFilters() {
           <RangeInput
             attribute="pricing.price_crc"
             translations={{
-              submitButtonText: "Aplicar"
+              submitButtonText: 'Aplicar'
             }}
           />
         </div>
-
       </div>
     </aside>
   )
