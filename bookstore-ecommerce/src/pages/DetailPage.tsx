@@ -7,6 +7,8 @@ import { formatPrice } from "../utils/formatPrice"
 import { useTranslation } from "react-i18next"
 import type { ProductRecord } from "../types/productRecord"
 import { translateLanguage } from "../utils/language"
+import { useCart } from "../features/carrito-de-compras/useCart"
+import { handleAddToCart } from "../utils/handleAddToCart"
 
 
 /**
@@ -16,6 +18,7 @@ export default function DetailPage() {
   const { id } = useParams()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { addItem } = useCart()
 
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,6 +76,13 @@ export default function DetailPage() {
                   src={product.productInfo.image_url}
                   alt={`Portada de ${product.productInfo.title}`}
                 />
+                <button
+                  type="button"
+                  className="product-detail__add"
+                  onClick={(event) => handleAddToCart(event, product, addItem)}
+                >
+                  Agregar al carrito
+                </button>
               </div>
 
               <div className="detail-info">

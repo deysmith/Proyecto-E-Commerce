@@ -1,6 +1,11 @@
+import { Link } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
+import { useCart } from "../features/carrito-de-compras/useCart"
 
 export function Header() {
+  const { items } = useCart()
+  const itemCount = items.reduce((total, item) => total + item.quantity, 0)
+  
   return (
     <header className="catalog-header">
       <div className="brand-mark">
@@ -32,6 +37,9 @@ export function Header() {
       {/* <button className="bag-button" aria-label="Ver carrito">
         Carrito <span>0</span>
       </button> */}
+      <Link className="bag-button" to="/cart" aria-label={`Ver carrito, ${itemCount} productos`}>
+        Carrito <span>{itemCount}</span>
+      </Link>
     </header>    
   )
 }

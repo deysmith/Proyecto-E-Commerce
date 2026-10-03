@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
 import { Header } from "../components/Header"
-import { useCart } from "../features/cart/useCart"
+import { useCart } from "../features/carrito-de-compras/useCart"
 import { formatPrice } from "../utils/formatPrice"
+import { Footer } from "../components/Footer"
 
 export default function CartPage() {
   const { items, increaseQuantity, decreaseQuantity, removeItem } = useCart()
@@ -95,10 +96,7 @@ export default function CartPage() {
           </>
         )}
       </main>
-      <footer className="catalog-footer">
-        <span>Laboratorio / Comercio Electrónico</span>
-        <span>Limón, Costa Rica · CRC</span>
-      </footer>
+      <Footer />
     </div>
   )
 }
