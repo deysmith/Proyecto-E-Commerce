@@ -12,6 +12,8 @@ export interface CartContextValue {
   increaseQuantity: (objectID: string) => void
   decreaseQuantity: (objectID: string) => void
   removeItem: (objectID: string) => void
+  notification: string | null
+  closeNotification: () => void
 }
 
 export const CartContext = createContext<CartContextValue | undefined>(undefined)
