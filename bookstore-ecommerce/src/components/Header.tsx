@@ -3,43 +3,28 @@ import { SearchBar } from "./SearchBar"
 import { useCart } from "../features/carrito-de-compras/useCart"
 
 export function Header() {
-  const { items } = useCart()
-  const itemCount = items.reduce((total, item) => total + item.quantity, 0)
-  
+  const { totals } = useCart()
+  const itemCount = totals.totalUnidades
+
   return (
     <header className="catalog-header">
-      <div className="brand-mark">
-        <button 
-          className="brand-mark__symbol" 
-          onClick={() => window.location.href = '/'}
-          aria-label="Ir al inicio"
-        >
-          B
-        </button>
-
-        <button 
-          className="brand-mark__text" 
-          onClick={() => window.location.href = '/'} 
-          aria-label="Ir al inicio"
-          >
-            Booksmart
-          </button>
-      </div>
+      {/* Se usa Link en vez de window.location para respetar la base de GitHub Pages */}
+      <Link to="/" className="brand-mark" aria-label="Ir al inicio">
+        <span className="brand-mark__symbol">B</span>
+        <span className="brand-mark__text">Booksmart</span>
+      </Link>
 
       <SearchBar />
 
-      {/* <nav aria-label="Navegación principal">
-        <a href="#catalogo">Catálogo</a>
-        <a href="#novedades">Novedades</a>
-        <a href="#nosotros">Nosotros</a>
-      </nav> */}
-
-      {/* <button className="bag-button" aria-label="Ver carrito">
-        Carrito <span>0</span>
-      </button> */}
-      <Link className="bag-button" to="/cart" aria-label={`Ver carrito, ${itemCount} productos`}>
-        Carrito <span>{itemCount}</span>
+      {/* Indicador del carrito con el total de unidades agregadas */}
+      <Link
+        className="bag-button"
+        to="/cart"
+        aria-label={`Ver carrito, ${itemCount} ${itemCount === 1 ? "unidad" : "unidades"}`}
+      >
+        <span className="bag-button__text">Carrito</span>
+        <span className="bag-button__count">{itemCount}</span>
       </Link>
-    </header>    
+    </header>
   )
 }
