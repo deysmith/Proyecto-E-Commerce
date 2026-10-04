@@ -4,6 +4,7 @@ import { getItemSubtotal } from "./CartCalculations"
 import type { CartItem } from "./CartReducer"
 import { formatPrice } from "../../utils/formatPrice"
 import { MinusIcon, PlusIcon, TrashIcon } from "./CartIcons"
+import { useState } from "react"
 
 interface CartItemRowProps {
   item: CartItem
@@ -15,7 +16,13 @@ interface CartItemRowProps {
  */
 export function CartItemRow({ item }: CartItemRowProps) {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart()
+  const [confirmarEliminar, setConfirmarEliminar] = useState(false)
   const subtotal = getItemSubtotal(item)
+
+  function eliminarProducto() {
+    removeItem(item.id)
+    setConfirmarEliminar(false)
+  }
 
   return (
     <li className="cart-row">
@@ -32,15 +39,36 @@ export function CartItemRow({ item }: CartItemRowProps) {
           Precio unitario <span>{formatPrice(item.price)}</span>
         </p>
 
-        <button
-          type="button"
-          className="cart-row__remove"
-          onClick={() => removeItem(item.id)}
-          aria-label={`Eliminar ${item.title} del carrito`}
+        {confirmarEliminar ? (
+          <div className="cart-clear">
+            <span>¿Desea quitar este libro?</span>
+            <button
+              type="button"
+              className="cart-clear__yes"
+              onClick={eliminarProducto}
+            >
+              Sí, eliminar
+          </button>
+
+          <button
+            type="button"
+            className="cart-clear__no"
+            onClick={() => setConfirmarEliminar(false)}
+          >
+            Cancelar
+          </button>
+          </div>
+        ):(
+          <button
+            type="button"
+            className="cart-row__remove"
+            onClick={() => setConfirmarEliminar(true)}
+            aria-label={`Eliminar ${item.title} del carrito`}
         >
           <TrashIcon />
           Eliminar
         </button>
+        )}
       </div>
 
       <div className="cart-row__qty">
