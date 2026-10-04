@@ -1,104 +1,98 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Header } from "../components/Header"
-import { useCart } from "../features/cart/useCart"
-import { formatPrice } from "../utils/formatPrice"
+import { Footer } from "../components/Footer"
+import { useCart } from "../features/carrito-de-compras/useCart"
+import { CartItemRow } from "../features/carrito-de-compras/CartItemRow"
+import { CartSummary } from "../features/carrito-de-compras/CartSummary"
+import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
 
+/**
+ * Página del carrito: lista de libros y resumen de compra.
+ */
 export default function CartPage() {
-  const { items, increaseQuantity, decreaseQuantity, removeItem } = useCart()
-  const total = items.reduce(
-    (amount, item) => amount + item.product.pricing.price_crc * item.quantity,
-    0
-  )
+  const { items, totals, clearCart } = useCart()
+  const [confirmarVaciar, setConfirmarVaciar] = useState(false)
+
+  const unidades = totals.totalUnidades
+
+  function vaciarCarrito() {
+    clearCart()
+    setConfirmarVaciar(false)
+  }
 
   return (
     <div className="catalog-shell">
       <Header />
+
       <main className="cart-page">
-        <div className="cart-page__heading">
-          <p className="eyebrow">Booksmart / Tu compra</p>
-          <h1>Tu carrito</h1>
+        <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
+          <Link to="/">Catálogo</Link>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Carrito</span>
+        </nav>
+
+        <div className="cart-head">
+          <div>
+            <h1 className="cart-head__title">Tu carrito</h1>
+            {items.length > 0 && (
+              <p className="cart-head__count">
+                {unidades} {unidades === 1 ? "libro listo" : "libros listos"} para comprar
+              </p>
+            )}
+          </div>
+
+          {/* Vaciar el carrito pide confirmación para evitar borrarlo por accidente */}
+          {items.length > 0 && (
+            <div className="cart-clear">
+              {confirmarVaciar ? (
+                <>
+                  <span>¿Quitar todos los libros?</span>
+                  <button type="button" className="cart-clear__yes" onClick={vaciarCarrito}>
+                    Sí, vaciar
+                  </button>
+                  <button type="button" className="cart-clear__no" onClick={() => setConfirmarVaciar(false)}>
+                    Cancelar
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="cart-clear__open" onClick={() => setConfirmarVaciar(true)}>
+                  Vaciar carrito
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {items.length === 0 ? (
-          <section className="cart-empty" aria-live="polite">
-            <p>Tu carrito está vacío.</p>
-            <Link to="/">Volver al catálogo</Link>
-          </section>
+          <CartEmpty />
         ) : (
-          <>
-            <section className="cart-list" aria-label="Productos en el carrito">
-              {items.map(({ product, quantity }) => {
-                const unitPrice = product.pricing.price_crc
-                const subtotal = unitPrice * quantity
+          <div className="cart-layout">
+            <section className="cart-panel" aria-label="Libros en el carrito">
+              <div className="cart-panel__head" aria-hidden="true">
+                <span>Libro</span>
+                <span>Cantidad</span>
+                <span>Subtotal</span>
+              </div>
 
-                return (
-                  <article className="cart-item" key={product.objectID}>
-                    <img
-                      className="cart-item__image"
-                      src={product.productInfo.image_url}
-                      alt={`Portada de ${product.productInfo.title}`}
-                    />
+              <ul className="cart-rows">
+                {items.map((item) => (
+                  <CartItemRow key={item.id} item={item} />
+                ))}
+              </ul>
 
-                    <div className="cart-item__details">
-                      <h2>{product.productInfo.title}</h2>
-                      <p>{product.productInfo.author}</p>
-                    </div>
-
-                    <div className="cart-item__unit-price">
-                      <span className="cart-item__label">Precio unitario</span>
-                      <strong>{formatPrice(unitPrice)}</strong>
-                    </div>
-
-                    <div className="cart-item__quantity">
-                      <span className="cart-item__label">Cantidad</span>
-                      <div className="quantity-control">
-                        <button
-                          type="button"
-                          aria-label={`Disminuir cantidad de ${product.productInfo.title}`}
-                          onClick={() => decreaseQuantity(product.objectID)}
-                          disabled={quantity === 1}
-                        >
-                          -
-                        </button>
-                        <output aria-live="polite">{quantity}</output>
-                        <button
-                          type="button"
-                          aria-label={`Aumentar cantidad de ${product.productInfo.title}`}
-                          onClick={() => increaseQuantity(product.objectID)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="cart-item__subtotal">
-                      <span className="cart-item__label">Subtotal</span>
-                      <strong>{formatPrice(subtotal)}</strong>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="cart-item__remove"
-                      onClick={() => removeItem(product.objectID)}
-                    >
-                      Eliminar
-                    </button>
-                  </article>
-                )
-              })}
+              <div className="cart-panel__foot">
+                <Link to="/" className="cart-panel__back">Seguir comprando</Link>
+              </div>
             </section>
 
-            <section className="cart-summary" aria-label="Resumen del carrito" aria-live="polite">
-              <p>Total <strong>{formatPrice(total)}</strong></p>
-              <Link to="/">Seguir explorando</Link>
-            </section>
-          </>
+            {/* En el Proyecto 2 aquí adentro va el botón para ir al checkout */}
+            <CartSummary />
+          </div>
         )}
       </main>
-      <footer className="catalog-footer">
-        <span>Laboratorio / Comercio Electrónico</span>
-        <span>Limón, Costa Rica · CRC</span>
-      </footer>
+
+      <Footer />
     </div>
   )
 }
