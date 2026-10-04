@@ -2,8 +2,9 @@ import { Link } from "react-router-dom"
 import type { Hit } from "instantsearch.js"
 import type { ProductRecord } from "../../types/productRecord"
 import { formatPrice } from "../../utils/formatPrice"
-import { translateLanguage } from "../../utils/language"
 import { useTranslation } from "react-i18next"
+import { handleAddToCart } from "../../utils/handleAddToCart"
+import { useCart } from "../carrito-de-compras/useCart"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -21,13 +22,16 @@ interface ProductCardProps {
  */
 export function ProductCard({ hit }: ProductCardProps) {
   const { t } = useTranslation()
+  const { addItem } = useCart()
+  
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
-      <div className="product-card__flip">
+      {/* <div className="product-card__flip"> */}
 
         <div className="product-card__face product-card__face--front">
           <div className="product-card__cover">
             <img
+              className="product-image"
               src={hit.productInfo.image_url}
               alt={`Portada de ${hit.productInfo.title}`}
               loading="lazy"
@@ -51,9 +55,17 @@ export function ProductCard({ hit }: ProductCardProps) {
               {formatPrice(hit.pricing.price_crc)}
             </strong>
           </div>
+
+          <button
+            type="button"
+            className="product-card__add"
+            onClick={(event) => handleAddToCart(event, hit, addItem)}
+          >
+            Agregar al carrito
+          </button>
         </div>
 
-        <div className="product-card__face product-card__face--back">
+        {/* <div className="product-card__face product-card__face--back">
           <p className="product-card__category">
             {t(`categories.${hit.facets.category}`, {
                 defaultValue: hit.facets.category
@@ -82,9 +94,9 @@ export function ProductCard({ hit }: ProductCardProps) {
           <strong className="product-card__back-price">
             {formatPrice(hit.pricing.price_crc)}
           </strong>
-        </div>
+        </div> */}
 
-      </div>
+      {/* </div> */}
     </Link>
   )
 }

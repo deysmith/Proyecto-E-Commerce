@@ -7,12 +7,24 @@ const ALGOLIA_ADMIN_KEY = process.env.ALGOLIA_ADMIN_KEY;
 const INDEX_NAME = process.env.INDEX_NAME;
 
 /**
- * Se encarga de cargar los productos desde un archivo JSON local
+ * Se encarga de cargar los productos desde un archivo JSON local y mejorar la
+ * resolución de las imagenes
  * @returns {Array} Lista de productos
  */
 function cargarProductos() {
   const data = fs.readFileSync("data/products.json", "utf-8");
-  return JSON.parse(data);
+  const productos = JSON.parse(data);
+
+  return productos.map((producto) => ({
+    ...producto,
+    productInfo: {
+      ...producto.productInfo,
+      image_url: producto.productInfo.image_url?.replace(
+        "zoom=1",
+        "zoom=2"
+      )
+    }
+  }));
 }
 
 /**
