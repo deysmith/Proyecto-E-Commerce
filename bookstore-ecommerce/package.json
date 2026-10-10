@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed-algolia": "node scripts/seed-algolia.mjs",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "update-images": "node scripts/updateBookImages.js"
   },
   "dependencies": {
     "algoliasearch": "^5.57.0",
@@ -21,7 +22,8 @@
     "react-dom": "^19.2.8",
     "react-i18next": "^17.0.13",
     "react-instantsearch": "^7.49.0",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "reactjs-popup": "^2.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
