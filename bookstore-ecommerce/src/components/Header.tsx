@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
 import { useCart } from "../features/carrito-de-compras/useCart"
+import { CartPopUp } from "../features/carrito-de-compras/CartPopUp"
 
 export function Header() {
   const { totals } = useCart()
@@ -16,15 +17,17 @@ export function Header() {
 
       <SearchBar />
 
+      <CartPopUp />
+
       {/* Indicador del carrito con el total de unidades agregadas */}
-      <Link
+      {/* <Link
         className="bag-button"
         to="/cart"
         aria-label={`Ver carrito, ${itemCount} ${itemCount === 1 ? "unidad" : "unidades"}`}
       >
         <span className="bag-button__text">Carrito</span>
         <span className="bag-button__count">{itemCount}</span>
-      </Link>
+      </Link> */}
     </header>
   )
 }
