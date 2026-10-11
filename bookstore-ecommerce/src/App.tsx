@@ -4,6 +4,7 @@ import { searchClient } from "./services/algoliaService"
 import HomePage from "./pages/HomePage"
 import DetailPage from "./pages/DetailPage"
 import CartPage from "./pages/CartPage"
+import CheckoutPage from "./pages/CheckoutPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/producto/:id" element={<DetailPage />} />
             <Route path="/cart" element={<CartPage />}/>
+            <Route path="/checkout" element={<CheckoutPage />}/>
           </Routes>
         </InstantSearch>
       </CartProvider>
