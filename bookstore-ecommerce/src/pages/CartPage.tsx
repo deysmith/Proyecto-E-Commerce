@@ -86,8 +86,11 @@ export default function CartPage() {
               </div>
             </section>
 
-            {/* En el Proyecto 2 aquí adentro va el botón para ir al checkout */}
-            <CartSummary />
+            <CartSummary>
+              <Link to="/checkout" className="checkout-btn checkout-btn--block">
+                Continuar al checkout
+              </Link>
+            </CartSummary>
           </div>
         )}
       </main>
