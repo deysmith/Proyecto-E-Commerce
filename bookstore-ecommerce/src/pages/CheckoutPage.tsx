@@ -8,6 +8,12 @@ import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
 import { CheckoutSteps } from "../features/checkout/CheckoutSteps"
 import { BuyerForm } from "../features/checkout/BuyerForm"
 import { DeliveryForm } from "../features/checkout/DeliveryForm"
+import { CheckoutReview } from "../features/checkout/CheckoutReview"
+import { CheckoutOrderCreated } from "../features/checkout/CheckoutOrderCreated"
+import { primerPasoConErrores } from "../features/checkout/CheckoutValidations"
+import { construirOrden, generarNumeroOrden } from "../features/ordenes/OrderBuilder"
+import { cargarOrdenes, guardarOrden } from "../features/ordenes/OrderStorage"
+import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 
 const PASOS = ["Comprador", "Entrega", "Resumen y pago"]
@@ -18,13 +24,59 @@ const PASOS = ["Comprador", "Entrega", "Resumen y pago"]
  * Los datos de cada paso se guardan aquí para no perderlos al ir y volver.
  */
 export default function CheckoutPage() {
-  const { items } = useCart()
+  const { items, totals } = useCart()
   const [paso, setPaso] = useState(0)
   const [comprador, setComprador] = useState<DatosComprador>(compradorVacio)
   const [entrega, setEntrega] = useState<DatosEntrega>(entregaVacia)
 
+  // Orden ya generada y guardada como pendiente (null = todavía no se confirma la compra)
+  const [orden, setOrden] = useState<Orden | null>(null)
+  // true = se muestra el panel de "orden creada", false = se muestra el resumen para revisar
+  const [mostrandoOrden, setMostrandoOrden] = useState(false)
+  const [errorGuardado, setErrorGuardado] = useState<string | null>(null)
+  // true = los formularios muestran sus errores desde el inicio
+  const [forzarErrores, setForzarErrores] = useState(false)
+
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
+    // Al salir del último paso se deja de mostrar el panel de orden creada, así al volver se ve el resumen actualizado y no uno viejo
+    if (nuevoPaso !== 2) setMostrandoOrden(false)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  function avanzarDesde(pasoActual: number) {
+    setForzarErrores(false)
+    irAPaso(pasoActual + 1)
+  }
+
+  /**
+   * Confirma la compra: revisa los datos otra vez, construye la orden con la información del checkout y del carrito, y la guarda como Pendiente.
+   */
+  function confirmarCompra() {
+    // 1) Revisión final: si algo está inválido se devuelve al usuario a ese paso
+    const pasoConErrores = primerPasoConErrores(comprador, entrega)
+    if (pasoConErrores !== null) {
+      setForzarErrores(true)
+      irAPaso(pasoConErrores)
+      return
+    }
+
+    // Numero de orden: si ya se generó uno antes, se mantiene; si no, se genera uno nuevo y único
+    const numero = orden && orden.estadoOrden === "pendiente"
+      ? orden.numero
+      : generarNumeroOrden(cargarOrdenes().map((guardada) => guardada.numero))
+
+    // Se construye la nueva orden con los datos del checkout y del carrito
+    const nuevaOrden = construirOrden({ numero, items, totales: totals, comprador, entrega })
+
+    if (!guardarOrden(nuevaOrden)) {
+      setErrorGuardado("No pudimos guardar tu orden. Revisa que tu navegador permita guardar datos e inténtalo de nuevo.")
+      return
+    }
+
+    setErrorGuardado(null)
+    setOrden(nuevaOrden)
+    setMostrandoOrden(true)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -70,7 +122,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        <div className="cart-layout">
+        <div className={paso === 2 ? "cart-layout cart-layout--single" : "cart-layout"}>
           <section className="cart-panel checkout-panel" aria-label="Formulario de checkout">
             <CheckoutSteps pasos={PASOS} pasoActual={paso} onIrAPaso={irAPaso} />
 
@@ -82,7 +134,8 @@ export default function CheckoutPage() {
               <BuyerForm
                 datos={comprador}
                 onCambio={setComprador}
-                onContinuar={() => irAPaso(1)}
+                onContinuar={() => avanzarDesde(0)}
+                mostrarErroresInicial={forzarErrores}
               />
             )}
 
@@ -91,27 +144,32 @@ export default function CheckoutPage() {
                 datos={entrega}
                 onCambio={setEntrega}
                 onAtras={() => irAPaso(0)}
-                onContinuar={() => irAPaso(2)}
+                onContinuar={() => avanzarDesde(1)}
+                mostrarErroresInicial={forzarErrores}
               />
             )}
 
-            {paso === 2 && (
-              <div className="checkout-form">
-                <h2 className="checkout-section__title">Resumen y pago</h2>
-                <p className="checkout-section__intro">Esta sección se completa en las siguientes tareas.</p>
+            {paso === 2 && !mostrandoOrden && (
+              <CheckoutReview
+                comprador={comprador}
+                entrega={entrega}
+                errorGuardado={errorGuardado}
+                onEditar={irAPaso}
+                onAtras={() => irAPaso(1)}
+                onConfirmar={confirmarCompra}
+              />
+            )}
 
-                <div className="checkout-actions">
-                  <button type="button" className="checkout-btn checkout-btn--ghost" onClick={() => irAPaso(1)}>
-                    Atrás
-                  </button>
-                </div>
-              </div>
+            {paso === 2 && mostrandoOrden && orden && (
+              <CheckoutOrderCreated orden={orden} onModificar={() => setMostrandoOrden(false)} />
             )}
           </section>
 
-          <CartSummary>
-            <Link to="/cart" className="checkout-summary__edit">Editar carrito</Link>
-          </CartSummary>
+          {paso !== 2 && (
+            <CartSummary>
+              <Link to="/cart" className="checkout-summary__edit">Editar carrito</Link>
+            </CartSummary>
+          )}
         </div>
       </main>
 

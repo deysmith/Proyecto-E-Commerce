@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from "react"
 import { Link } from "react-router-dom"
 import { CheckoutField } from "./CheckoutField"
+import { CheckoutErrorBanner } from "./CheckoutErrorBanner"
 import type { CampoComprador, DatosComprador } from "./CheckoutTypes"
 import { validarComprador } from "./CheckoutValidations"
 
 interface BuyerFormProps {
   datos: DatosComprador
+  mostrarErroresInicial?: boolean
   onCambio: (datos: DatosComprador) => void
   onContinuar: () => void
 }
@@ -14,16 +16,11 @@ interface BuyerFormProps {
 const ORDEN_CAMPOS: CampoComprador[] = ["nombreCompleto", "correo", "telefono"]
 
 /**
- * Paso 1 del checkout: información del comprador.
- * Los datos viven en la página del checkout (así no se pierden al cambiar de paso).
- * Aquí solo se maneja qué errores se muestran:
- * - Mientras se escribe no se molesta al usuario
- * - Al salir de un campo se muestra su error
- * - Al presionar "Continuar" se muestran todos y no deja avanzar
+ * Formulario de datos del comprador. Se valida en cada render y se muestran los errores
  */
-export function BuyerForm({ datos, onCambio, onContinuar }: BuyerFormProps) {
+export function BuyerForm({ datos, onCambio, onContinuar, mostrarErroresInicial = false }: BuyerFormProps) {
   const [tocados, setTocados] = useState<Partial<Record<CampoComprador, boolean>>>({})
-  const [intentoContinuar, setIntentoContinuar] = useState(false)
+  const [intentoContinuar, setIntentoContinuar] = useState(mostrarErroresInicial)
 
   // Los errores se calculan en cada render a partir de lo que hay escrito
   const errores = validarComprador(datos)
@@ -66,6 +63,8 @@ export function BuyerForm({ datos, onCambio, onContinuar }: BuyerFormProps) {
       <p className="checkout-section__intro">
         Con estos datos te enviamos la confirmación de tu compra y te contactamos si hay algún problema con la entrega.
       </p>
+
+      <CheckoutErrorBanner cantidad={intentoContinuar ? Object.keys(errores).length : 0} />
 
       <div className="checkout-grid">
         <CheckoutField

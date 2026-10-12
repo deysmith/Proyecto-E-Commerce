@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react"
 import { CheckoutCombobox } from "./CheckoutCombobox"
 import { CheckoutTextArea } from "./CheckoutTextArea"
+import { CheckoutErrorBanner } from "./CheckoutErrorBanner"
 import { obtenerCantones, obtenerDistritos, obtenerProvincias } from "./CheckoutLocations"
 import type { CampoEntrega, DatosEntrega } from "./CheckoutTypes"
 import { INFO_ADICIONAL_MAXIMO, DIRECCION_MAXIMO, validarEntrega } from "./CheckoutValidations"
 
 interface DeliveryFormProps {
   datos: DatosEntrega
+  mostrarErroresInicial?: boolean
   onCambio: (datos: DatosEntrega) => void
   onAtras: () => void
   onContinuar: () => void
@@ -16,17 +18,11 @@ interface DeliveryFormProps {
 const ORDEN_CAMPOS: CampoEntrega[] = ["provincia", "canton", "distrito", "direccion", "infoAdicional"]
 
 /**
- * Paso 2 del checkout: información de entrega.
- * Provincia -> Cantón -> Distrito son listas dependientes:
- * - El cantón se habilita al elegir provincia y solo muestra los de esa provincia
- * - El distrito se habilita al elegir cantón y solo muestra los de ese cantón
- * - Si se cambia una lista de arriba, las de abajo se borran
- * Los errores se muestran igual que en el formulario del comprador
- * (al salir del campo, o todos juntos al presionar "Continuar").
+ * Información de entrega. Se valida en cada render y se muestran los errores.
  */
-export function DeliveryForm({ datos, onCambio, onAtras, onContinuar }: DeliveryFormProps) {
+export function DeliveryForm({ datos, onCambio, onAtras, onContinuar, mostrarErroresInicial = false }: DeliveryFormProps) {
   const [tocados, setTocados] = useState<Partial<Record<CampoEntrega, boolean>>>({})
-  const [intentoContinuar, setIntentoContinuar] = useState(false)
+  const [intentoContinuar, setIntentoContinuar] = useState(mostrarErroresInicial)
 
   const errores = validarEntrega(datos)
 
@@ -41,6 +37,13 @@ export function DeliveryForm({ datos, onCambio, onAtras, onContinuar }: Delivery
   function errorVisible(campo: CampoEntrega) {
     return tocados[campo] || intentoContinuar ? errores[campo] : undefined
   }
+
+  // El cantón y el distrito están deshabilitados hasta elegir el de arriba, así que no se les muestra error
+  function estaOculto(campo: CampoEntrega) {
+    return (campo === "canton" && datos.provincia === null) || (campo === "distrito" && datos.canton === null)
+  }
+
+  const erroresQueSeVen = ORDEN_CAMPOS.filter((campo) => errores[campo] && !estaOculto(campo)).length
 
   function cambiarProvincia(codigo: number | null) {
     // Al cambiar de provincia los cantones y distritos anteriores ya no sirven
@@ -80,6 +83,8 @@ export function DeliveryForm({ datos, onCambio, onAtras, onContinuar }: Delivery
         Elige primero la provincia, luego el cantón y el distrito, y escribe las señas para que el repartidor encuentre tu casa.
       </p>
 
+      <CheckoutErrorBanner cantidad={intentoContinuar ? erroresQueSeVen : 0} />
+
       <div className="checkout-grid">
         <CheckoutCombobox
           id="entrega-provincia"
@@ -105,7 +110,7 @@ export function DeliveryForm({ datos, onCambio, onAtras, onContinuar }: Delivery
           deshabilitado={datos.provincia === null}
           onSeleccionar={cambiarCanton}
           onBlur={() => marcarTocado("canton")}
-          error={datos.provincia === null ? undefined : errorVisible("canton")}
+          error={estaOculto("canton") ? undefined : errorVisible("canton")}
         />
 
         <CheckoutCombobox
@@ -119,7 +124,7 @@ export function DeliveryForm({ datos, onCambio, onAtras, onContinuar }: Delivery
           deshabilitado={datos.canton === null}
           onSeleccionar={(codigo) => onCambio({ ...datos, distrito: codigo })}
           onBlur={() => marcarTocado("distrito")}
-          error={datos.canton === null ? undefined : errorVisible("distrito")}
+          error={estaOculto("distrito") ? undefined : errorVisible("distrito")}
         />
 
         <CheckoutTextArea

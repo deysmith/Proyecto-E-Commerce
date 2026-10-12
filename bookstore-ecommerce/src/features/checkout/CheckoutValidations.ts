@@ -160,3 +160,13 @@ export function validarEntrega(datos: DatosEntrega): ErroresEntrega {
 
   return errores
 }
+
+/**
+ * Devuelve el primer paso con errores, o null si no hay errores.
+ * 0 = datos del comprador, 1 = dirección de entrega
+ */
+export function primerPasoConErrores(comprador: DatosComprador, entrega: DatosEntrega): number | null {
+  if (Object.keys(validarComprador(comprador)).length > 0) return 0
+  if (Object.keys(validarEntrega(entrega)).length > 0) return 1
+  return null
+}
