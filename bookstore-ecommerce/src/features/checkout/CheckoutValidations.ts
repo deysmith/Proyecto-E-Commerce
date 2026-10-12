@@ -1,4 +1,4 @@
-import type { DatosComprador, ErroresComprador } from "./CheckoutTypes"
+import type { DatosComprador, DatosEntrega, ErroresComprador, ErroresEntrega } from "./CheckoutTypes"
 
 /**
  * Validaciones del checkout.
@@ -87,6 +87,76 @@ export function validarComprador(datos: DatosComprador): ErroresComprador {
   if (errorNombre) errores.nombreCompleto = errorNombre
   if (errorCorreo) errores.correo = errorCorreo
   if (errorTelefono) errores.telefono = errorTelefono
+
+  return errores
+}
+
+export const DIRECCION_MINIMO = 10
+export const DIRECCION_MAXIMO = 200
+export const INFO_ADICIONAL_MAXIMO = 250
+
+/**
+ * Provincia, cantón y distrito: obligatorios.
+ * Vale null si el usuario no eligió nada o si escribió algo que no está en la lista.
+ */
+export function validarProvincia(codigo: number | null): string {
+  return codigo === null ? "Selecciona una provincia de la lista." : ""
+}
+
+export function validarCanton(codigo: number | null): string {
+  return codigo === null ? "Selecciona un cantón de la lista." : ""
+}
+
+export function validarDistrito(codigo: number | null): string {
+  return codigo === null ? "Selecciona un distrito de la lista." : ""
+}
+
+/**
+ * Dirección exacta: obligatoria, con un mínimo para evitar cosas como "casa"
+ */
+export function validarDireccion(valor: string): string {
+  const direccion = valor.trim().replace(/\s+/g, " ")
+
+  if (direccion === "") return "Ingresa tu dirección exacta."
+  if (direccion.length < DIRECCION_MINIMO) {
+    return `Escribe una dirección más detallada (mínimo ${DIRECCION_MINIMO} caracteres).`
+  }
+  if (direccion.length > DIRECCION_MAXIMO) {
+    return `La dirección es demasiado larga (máximo ${DIRECCION_MAXIMO} caracteres).`
+  }
+
+  return ""
+}
+
+/**
+ * Información adicional: es opcional, solo se limita el largo
+ */
+export function validarInfoAdicional(valor: string): string {
+  if (valor.trim().length > INFO_ADICIONAL_MAXIMO) {
+    return `Es demasiado largo (máximo ${INFO_ADICIONAL_MAXIMO} caracteres).`
+  }
+
+  return ""
+}
+
+/**
+ * Valida todo el formulario de entrega.
+ * Si el objeto devuelto está vacío, no hay errores y se puede avanzar.
+ */
+export function validarEntrega(datos: DatosEntrega): ErroresEntrega {
+  const errores: ErroresEntrega = {}
+
+  const errorProvincia = validarProvincia(datos.provincia)
+  const errorCanton = validarCanton(datos.canton)
+  const errorDistrito = validarDistrito(datos.distrito)
+  const errorDireccion = validarDireccion(datos.direccion)
+  const errorInfo = validarInfoAdicional(datos.infoAdicional)
+
+  if (errorProvincia) errores.provincia = errorProvincia
+  if (errorCanton) errores.canton = errorCanton
+  if (errorDistrito) errores.distrito = errorDistrito
+  if (errorDireccion) errores.direccion = errorDireccion
+  if (errorInfo) errores.infoAdicional = errorInfo
 
   return errores
 }

@@ -59,6 +59,17 @@
 
 .checkout-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--color-border); }
 
+.checkout-combobox__box { position: relative; }
+.checkout-combobox__box input { padding-right: 40px; cursor: text; }
+.checkout-combobox__box::after { content: ""; position: absolute; top: 18px; right: 16px; width: 8px; height: 8px; border-right: 2px solid var(--color-text-muted); border-bottom: 2px solid var(--color-text-muted); transform: rotate(45deg); pointer-events: none; }
+.checkout-field input:disabled { background: var(--color-border); color: var(--color-text-faint); cursor: not-allowed; opacity: .75; }
+
+.checkout-combobox__list { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30; max-height: 240px; margin: 0; padding: 6px; overflow-y: auto; list-style: none; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface); box-shadow: 0 12px 28px rgba(4, 71, 75, .16); scrollbar-color: var(--color-accent-soft) transparent; scrollbar-width: thin; }
+.checkout-combobox__option { padding: 10px 12px; border-radius: 8px; color: var(--color-text-muted); font-size: 14px; cursor: pointer; }
+.checkout-combobox__option.is-active { background: var(--color-bg); color: var(--color-primary); }
+.checkout-combobox__option.is-selected { color: var(--color-primary); font-weight: 700; }
+.checkout-combobox__empty { padding: 12px; color: var(--color-text-faint); font-size: 13px; }
+
 @media (max-width: 640px) {
   .checkout-panel { padding: 22px 18px; }
   .checkout-section__title { font-size: 24px; }
@@ -69,6 +80,10 @@
 
   .checkout-actions { flex-direction: column-reverse; align-items: stretch; }
   .checkout-actions .checkout-btn { width: 100%; }
+
+  .checkout-field input, .checkout-field textarea { font-size: 16px; }
+  .checkout-combobox__option { padding: 12px; font-size: 16px; }
+  .checkout-combobox__list { max-height: 220px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

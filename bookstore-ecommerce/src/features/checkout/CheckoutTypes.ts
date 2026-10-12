@@ -20,3 +20,24 @@ export const compradorVacio: DatosComprador = {
   correo: "",
   telefono: "",
 }
+
+// Información de entrega
+export interface DatosEntrega {
+  provincia: number | null
+  canton: number | null
+  distrito: number | null
+  direccion: string
+  infoAdicional: string
+}
+
+export type CampoEntrega = keyof DatosEntrega
+
+export type ErroresEntrega = Partial<Record<CampoEntrega, string>>
+
+export const entregaVacia: DatosEntrega = {
+  provincia: null,
+  canton: null,
+  distrito: null,
+  direccion: "",
+  infoAdicional: "",
+}

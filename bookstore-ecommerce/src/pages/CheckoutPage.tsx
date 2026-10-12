@@ -7,7 +7,8 @@ import { CartSummary } from "../features/carrito-de-compras/CartSummary"
 import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
 import { CheckoutSteps } from "../features/checkout/CheckoutSteps"
 import { BuyerForm } from "../features/checkout/BuyerForm"
-import { compradorVacio, type DatosComprador } from "../features/checkout/CheckoutTypes"
+import { DeliveryForm } from "../features/checkout/DeliveryForm"
+import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 
 const PASOS = ["Comprador", "Entrega", "Resumen y pago"]
 
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
   const { items } = useCart()
   const [paso, setPaso] = useState(0)
   const [comprador, setComprador] = useState<DatosComprador>(compradorVacio)
+  const [entrega, setEntrega] = useState<DatosEntrega>(entregaVacia)
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -85,19 +87,12 @@ export default function CheckoutPage() {
             )}
 
             {paso === 1 && (
-              <div className="checkout-form">
-                <h2 className="checkout-section__title">Información de entrega</h2>
-                <p className="checkout-section__intro">Esta sección se completa en la siguiente tarea.</p>
-
-                <div className="checkout-actions">
-                  <button type="button" className="checkout-btn checkout-btn--ghost" onClick={() => irAPaso(0)}>
-                    Atrás
-                  </button>
-                  <button type="button" className="checkout-btn" onClick={() => irAPaso(2)}>
-                    Continuar al resumen
-                  </button>
-                </div>
-              </div>
+              <DeliveryForm
+                datos={entrega}
+                onCambio={setEntrega}
+                onAtras={() => irAPaso(0)}
+                onContinuar={() => irAPaso(2)}
+              />
             )}
 
             {paso === 2 && (
