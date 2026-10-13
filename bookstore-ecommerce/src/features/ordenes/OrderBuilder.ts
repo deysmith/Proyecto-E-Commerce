@@ -46,7 +46,7 @@ export function generarNumeroOrden(numerosUsados: string[]): string {
 /**
  * La entrega del checkout guarda códigos (provincia: 7); en la orden se guardan los nombres para poder mostrarlos directamente.
  */
-function entregaParaOrden(entrega: DatosEntrega): EntregaOrden {
+export function entregaParaOrden(entrega: DatosEntrega): EntregaOrden {
   return {
     provincia: nombreProvincia(entrega.provincia),
     canton: nombreCanton(entrega.canton),
@@ -56,7 +56,7 @@ function entregaParaOrden(entrega: DatosEntrega): EntregaOrden {
   }
 }
 
-function productoParaOrden(item: CartItem): ProductoOrden {
+export function productoParaOrden(item: CartItem): ProductoOrden {
   return {
     id: item.id,
     titulo: item.title,
@@ -64,6 +64,7 @@ function productoParaOrden(item: CartItem): ProductoOrden {
     precioUnitario: item.price,
     cantidad: item.quantity,
     subtotal: getItemSubtotal(item),
+    imagen: item.image,
   }
 }
 

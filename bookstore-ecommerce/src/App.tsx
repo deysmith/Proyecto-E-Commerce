@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage"
 import DetailPage from "./pages/DetailPage"
 import CartPage from "./pages/CartPage"
 import CheckoutPage from "./pages/CheckoutPage"
+import ConfirmationPage from "./pages/ConfirmationPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/producto/:id" element={<DetailPage />} />
             <Route path="/cart" element={<CartPage />}/>
             <Route path="/checkout" element={<CheckoutPage />}/>
+            <Route path="/confirmacion/:numero" element={<ConfirmationPage />}/>
           </Routes>
         </InstantSearch>
       </CartProvider>
