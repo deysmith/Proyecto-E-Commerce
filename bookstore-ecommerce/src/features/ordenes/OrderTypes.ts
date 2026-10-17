@@ -28,6 +28,7 @@ export interface ProductoOrden {
   precioUnitario: number
   cantidad: number
   subtotal: number
+  imagen?: string
 }
 
 /**
@@ -48,7 +49,11 @@ export interface MontosOrden {
   envio: number
   total: number
 }
-
+ /**
+  * Una orden de compra, tal como se guarda en la base de datos y se muestra en la pantalla de confirmación.
+  * Se guarda una copia de los datos del comprador y de la entrega, así si el usuario cambia sus datos después, la orden no se modifica.
+  * Se guarda una copia de los productos y montos, así si el catálogo cambia después, la orden no se modifica.
+  */
 export interface Orden {
   // Número único que ve el usuario
   numero: string
@@ -58,8 +63,18 @@ export interface Orden {
   entrega: EntregaOrden
   productos: ProductoOrden[]
   montos: MontosOrden
-  // Moneda de los montos. El servicio de pago la recibe junto con el total
   moneda: "CRC"
   estadoOrden: EstadoOrden
   estadoPago: EstadoPago
+  pago?: PagoOrden
+}
+
+/**
+ * Datos del último intento de pago, tal como los devolvió el servicio Sandbox.
+ */
+export interface PagoOrden {
+  idTransaccion: string | null
+  fecha: string
+  mensaje: string
+  tarjeta?: { marca: string; ultimos4: string } | null
 }

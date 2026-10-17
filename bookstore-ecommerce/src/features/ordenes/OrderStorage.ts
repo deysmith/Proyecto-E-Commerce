@@ -71,3 +71,10 @@ export function guardarOrden(orden: Orden): boolean {
     return false
   }
 }
+
+/**
+ * Busca una orden por su número. Devuelve null si no existe.
+ */
+export function buscarOrden(numero: string): Orden | null {
+  return cargarOrdenes().find((orden) => orden.numero === numero) ?? null
+}
