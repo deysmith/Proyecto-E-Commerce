@@ -3,7 +3,7 @@ import type { Orden } from "./OrderTypes"
 
 /**
  * Aplica el resultado del pago a la orden y devuelve la orden actualizada.
- * Se usa tanto en el checkout como en el panel de administración.
+ * Se usa para actualizar la orden después de que el usuario realiza un pago en la pasarela de pagos.
  * Una orden ya confirmada no se vuelve a cobrar ni a modificar.
  * El pago se guarda en la orden, pero nunca se guarda la tarjeta completa.
  */
