@@ -1,0 +1,10 @@
+[
+  { "numero": "4242424242424242", "resultado": "PAYMENT_APPROVED", "descripcion": "Pago aprobado" },
+  { "numero": "5555555555554444", "resultado": "PAYMENT_APPROVED", "descripcion": "Pago aprobado" },
+  { "numero": "4000000000000002", "resultado": "PAYMENT_DECLINED", "descripcion": "Tarjeta rechazada por el banco" },
+  { "numero": "4000000000009995", "resultado": "PAYMENT_DECLINED", "descripcion": "Fondos insuficientes" },
+  { "numero": "4000000000000069", "resultado": "PAYMENT_DECLINED", "descripcion": "Tarjeta vencida" },
+  { "numero": "4000000000000127", "resultado": "PAYMENT_DECLINED", "descripcion": "Código de seguridad (CVC) incorrecto" },
+  { "numero": "4000000000000119", "resultado": "PAYMENT_ERROR", "descripcion": "Error de procesamiento del servicio" },
+  { "numero": "4000000000000101", "resultado": "PAYMENT_ERROR", "descripcion": "El servicio no respondió a tiempo" }
+]
