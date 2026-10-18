@@ -82,13 +82,8 @@ export function CartPopUp() {
 
               <ul className="cart-popup__list">
                 {items.map((item) => (
-                  <li key={item.id} className="cart-popup__item">
-                    <CartItemRow item={item} />
-                  </li>
+                  <CartItemRow key={item.id} item={item} />
                 ))}
-              </ul>
-              <ul className="cart-popup__list">
-
               </ul>
             </div>
 

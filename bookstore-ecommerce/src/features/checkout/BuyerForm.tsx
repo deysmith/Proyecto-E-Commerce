@@ -1,15 +1,15 @@
 import { useState, type FormEvent } from "react"
-import { Link } from "react-router-dom"
 import { CheckoutField } from "./CheckoutField"
 import { CheckoutErrorBanner } from "./CheckoutErrorBanner"
 import type { CampoComprador, DatosComprador } from "./CheckoutTypes"
-import { validarComprador } from "./CheckoutValidations"
+import { prefijoTelefonoInvalido, validarComprador } from "./CheckoutValidations"
 
 interface BuyerFormProps {
   datos: DatosComprador
   mostrarErroresInicial?: boolean
   onCambio: (datos: DatosComprador) => void
   onContinuar: () => void
+  onVolverAlCarrito: () => void
 }
 
 // Orden en que aparecen los campos (sirve para enfocar el primero con error)
@@ -18,7 +18,7 @@ const ORDEN_CAMPOS: CampoComprador[] = ["nombreCompleto", "correo", "telefono"]
 /**
  * Formulario de datos del comprador. Se valida en cada render y se muestran los errores
  */
-export function BuyerForm({ datos, onCambio, onContinuar, mostrarErroresInicial = false }: BuyerFormProps) {
+export function BuyerForm({ datos, onCambio, onContinuar, onVolverAlCarrito, mostrarErroresInicial = false }: BuyerFormProps) {
   const [tocados, setTocados] = useState<Partial<Record<CampoComprador, boolean>>>({})
   const [intentoContinuar, setIntentoContinuar] = useState(mostrarErroresInicial)
 
@@ -34,7 +34,9 @@ export function BuyerForm({ datos, onCambio, onContinuar, mostrarErroresInicial 
   }
 
   function errorVisible(campo: CampoComprador) {
-    return tocados[campo] || intentoContinuar ? errores[campo] : undefined
+    // El error del teléfono se muestra apenas el número empieza mal (0, 1, 3 o 9), sin esperar a que salga del campo
+    const prefijoMalo = campo === "telefono" && prefijoTelefonoInvalido(datos.telefono)
+    return tocados[campo] || intentoContinuar || prefijoMalo ? errores[campo] : undefined
   }
 
   function enviar(evento: FormEvent<HTMLFormElement>) {
@@ -117,7 +119,7 @@ export function BuyerForm({ datos, onCambio, onContinuar, mostrarErroresInicial 
       </div>
 
       <div className="checkout-actions">
-        <Link to="/cart" className="checkout-btn checkout-btn--ghost">Volver al carrito</Link>
+        <button type="button" className="checkout-btn checkout-btn--ghost" onClick={onVolverAlCarrito}>Volver al carrito</button>
         <button type="submit" className="checkout-btn">Continuar a entrega</button>
       </div>
     </form>

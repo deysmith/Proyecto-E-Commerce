@@ -122,7 +122,14 @@
 .pago { margin-top: 28px; padding-top: 26px; border-top: 1px solid var(--color-border); }
 .pago__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 16px; }
 .pago__title { margin: 0; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 500; }
-.pago__marcas { margin: 0; color: var(--color-text-faint); font-size: 12.5px; }
+.marcas { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.marcas__item { display: flex; align-items: center; justify-content: center; height: 38px; min-width: 56px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 6px; background: #fff; transition: opacity .2s ease, filter .2s ease; }
+.marcas__img { display: block; width: auto; }
+.marcas__img--visa { height: 14px; }
+.marcas__img--mastercard { height: 26px; }
+.marcas__img--amex { height: 26px; }
+.marcas__texto { color: var(--color-text-muted); font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+.marcas__item--apagada { opacity: .35; filter: grayscale(1); }
 .pago__form { padding: 22px; border: 1px solid var(--color-border); border-radius: 14px; }
 .pago__campos { min-width: 0; margin: 0; padding: 0; border: 0; }
 .pago__campos:disabled { opacity: .75; }
@@ -153,6 +160,21 @@
 .error-page__text { margin: 0 0 24px; color: var(--color-text-muted); font-size: 15px; line-height: 1.55; }
 .error-page__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .error-page__actions a.checkout-btn { text-decoration: none; }
+
+.salida-fondo { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 71, 75, 0.5); backdrop-filter: blur(3px); animation: salida-fondo-entrada .2s ease; }
+.salida-caja { width: 100%; max-width: 460px; padding: 34px 32px 30px; border: 1px solid var(--color-border); border-radius: 24px; background: var(--color-surface); box-shadow: 0 24px 60px rgba(4, 71, 75, 0.3); text-align: center; animation: salida-caja-entrada .25s ease; }
+.salida-caja__icono { display: grid; place-items: center; width: 58px; height: 58px; margin: 0 auto 18px; border-radius: 50%; background: rgba(228, 152, 30, 0.16); color: var(--color-accent-strong); }
+.salida-caja__titulo { margin: 0 0 10px; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: 28px; font-weight: 500; line-height: 1.2; }
+.salida-caja__texto { max-width: 34ch; margin: 0 auto 28px; color: var(--color-text-muted); font-size: 15px; line-height: 1.6; }
+.salida-caja__acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.salida-caja__acciones .checkout-btn { width: 100%; padding-right: 14px; padding-left: 14px; font-size: 14px; }
+.salida-caja__acciones .checkout-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.salida-caja__salir { border-color: #b34b30; background: transparent; color: #b34b30; }
+.salida-caja__salir:hover:not(:disabled) { border-color: #8e3823; background: #b34b30; color: #fff; }
+.salida-caja__salir:focus-visible { outline: 2px solid #b34b30; outline-offset: 2px; }
+
+@keyframes salida-fondo-entrada { from { opacity: 0; } to { opacity: 1; } }
+@keyframes salida-caja-entrada { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 900px) {
   .checkout-review__cards { grid-template-columns: 1fr; }
@@ -188,9 +210,14 @@
   .pago__form { padding: 18px 16px; }
   .pago__grid .checkout-field input { font-size: 16px; }
   .confirmation-hero { padding: 24px 16px; }
+
+  .salida-caja { padding: 28px 20px 22px; border-radius: 20px; }
+  .salida-caja__titulo { font-size: 25px; }
+  .salida-caja__acciones { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .checkout-btn, .checkout-field input, .checkout-field select, .checkout-field textarea, .checkout-steps__dot { transition: none; }
   .checkout-spinner { animation-duration: 2.4s; }
+  .salida-fondo, .salida-caja { animation: none; }
 }

@@ -11,7 +11,7 @@
   --color-border: #DDD0CF;
   --color-cover-placeholder: #DBCBCB;
 }
-
+.catalog-header-fijo { position: sticky; top: 0; z-index: 50; background: rgba(231, 231, 229, 0.94); backdrop-filter: blur(8px); }
 .catalog-shell {
   min-height: 100vh;
   width: 100%;
@@ -21,8 +21,10 @@
   background:
     radial-gradient(circle at top right, rgba(211, 185, 185, 0.18), transparent 55%),
     var(--color-bg);
-  overflow-x: hidden;
-}
+  overflow-x: clip;
+} 
+
+
 .catalog-header, .catalog-intro, .catalog-content, .catalog-footer { width: 100%; max-width: 1320px; margin: auto; padding-left: 5vw; padding-right: 5vw; }
 .catalog-header { min-height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); }
 .catalog-footer {display: flex; justify-content: space-between; padding-top: 20px; padding-bottom: 28px; border-top: 1px solid var(--color-border); color: var(--color-text-faint); font-size: 11px; }

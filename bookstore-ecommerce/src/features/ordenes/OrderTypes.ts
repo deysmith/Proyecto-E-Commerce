@@ -66,6 +66,7 @@ export interface Orden {
   moneda: "CRC"
   estadoOrden: EstadoOrden
   estadoPago: EstadoPago
+  intentosPago?: number
   pago?: PagoOrden
 }
 
