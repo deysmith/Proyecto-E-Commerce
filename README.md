@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Curso-IC8063_Comercio_Electrónico_II-orange" />
   <img src="https://img.shields.io/badge/Tarea-II_Semestre_2026-brown" />
-  <img src="https://img.shields.io/badge/Versión-1.5.0-green" />
+  <img src="https://img.shields.io/badge/Versión-2.0.0-green" />
 </p>
 
 
@@ -13,7 +13,7 @@
 
 Booksmart es una aplicación web de comercio electrónico  enfocada en la venta y consulta de libros.
 
-La aplicación ofrece un catálogo de productos donde los usuarios pueden buscar libros, aplicar filtros, consultar el detalle de cada producto y gestionar un carrito de compras.
+La aplicación ofrece un catálogo de productos donde los usuarios pueden buscar libros, aplicar filtros, consultar el detalle de cada producto, gestionar un carrito de compras y la simulación de un proceso de checkout.
 
 Para la búsqueda y filtrado se utiliza Algolia, permitiendo realizar consultas sobre diferentes atributos de los libros y obtener resultados de manera rápida.
 
@@ -24,12 +24,12 @@ El modelo de productos fue diseñado inicialmente para un entorno B2C, pero tamb
 ## Funcionalidades
 
 - Búsqueda de libros implementada  mediante Algolia.
-- Filtros por categoría, editorial e idioma.
-- Filtro por rango de precio.
+- Filtros por categoría, editorial, idioma y rango de precio.
 - Página de detalle de cada producto.
 - Carrito de compras.
 - Historial de búsquedas recientes.
 - Search as you type
+- Simulación del proceso de Checkout.
 
 ---
 
@@ -152,7 +152,7 @@ scripts/seed-algolia.mjs
 
 ## Fuente de información
 
-Los datos bibliográficos de los libros fueron obtenidos mediante **Google Books API** a partir de una estantería de libros previamente seleccionada.
+Los datos bibliográficos de los libros fueron obtenidos mediante Google Books API a partir de una estantería de libros previamente seleccionada.
 
 Posteriormente, la información fue transformada al modelo utilizado por Booksmart.
 
@@ -192,6 +192,35 @@ Proyecto-E-Commerce/
 ```
 
 La aplicación utiliza una estructura modular que separa componentes, páginas, funcionalidades, servicios, tipos y funciones auxiliares.
+
+---
+
+## Decisiones de diseño
+
+Durante el desarrollo se tomaron diferentes decisiones para adaptar el catálogo a las necesidades de un comercio electrónico:
+
+### Google Books como fuente de datos
+
+Se utilizó Google Books como fuente de información bibliográfica para obtener un conjunto inicial de libros.
+
+### Información comercial generada
+
+Se agregaron datos que no estaban disponibles en la API, como precios, inventario y características B2B.
+
+### Separación entre producto y facetas
+
+Los datos bibliográficos se mantienen dentro de `productInfo`, mientras que los atributos destinados al filtrado se encuentran dentro de `facets`.
+
+### Arquitectura modular
+
+Las funcionalidades se separaron en módulos independientes para facilitar el mantenimiento y la incorporación de nuevas funcionalidades.
+
+### Manejo del atributo de categoría
+
+El atributo de categoría se manejo como un campo de texto, en vez de un arreglo. Esto se debe a que la API solo devuelve una categoría por libro, por lo que no consideramos necesario el uso de arreglos.
+
+### Proceso de simulación de pago
+Para evitar el uso de funciones que utilicen la aleatoriedad para definir el estado de un pago, se definieron 8 número de tarjeta en el archivo: [data/tarjetasPrueba.json](https://github.com/deysmith/Proyecto-E-Commerce/blob/d99391adfb9889fe8acdbbe1f6a6addaa7b72d17/bookstore-ecommerce/data/tarjetasPrueba.json). 
 
 ---
 
@@ -279,30 +308,7 @@ https://deysmith.github.io/Proyecto-E-Commerce/
 ---
 
 
-## Decisiones de diseño
-
-Durante el desarrollo se tomaron diferentes decisiones para adaptar el catálogo a las necesidades de un comercio electrónico:
-
-### Google Books como fuente de datos
-
-Se utilizó Google Books como fuente de información bibliográfica para obtener un conjunto inicial de libros.
-
-### Información comercial generada
-
-Se agregaron datos que no estaban disponibles en la API, como precios, inventario y características B2B.
-
-### Separación entre producto y facetas
-
-Los datos bibliográficos se mantienen dentro de `productInfo`, mientras que los atributos destinados al filtrado se encuentran dentro de `facets`.
-
-### Arquitectura modular
-
-Las funcionalidades se separaron en módulos independientes para facilitar el mantenimiento y la incorporación de nuevas funcionalidades.
-
----
-
-
-Proyecto desarrollado para el curso de **Laboratorio 2 - E-Commerce**.
+Proyecto desarrollado para el curso de **Comercio Electrónico**.
 
 **Grupo:** 8
 

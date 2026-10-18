@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
-import { useCart } from "../features/carrito-de-compras/useCart"
 import { CartPopUp } from "../features/carrito-de-compras/CartPopUp"
 
-export function Header() {
-  const { totals } = useCart()
-  const itemCount = totals.totalUnidades
+interface HeaderProps {
+  esCheckout?: boolean
+}
 
+export function Header( { esCheckout }: HeaderProps) {
   return (
     <header className="catalog-header">
       {/* Se usa Link en vez de window.location para respetar la base de GitHub Pages */}
@@ -15,19 +15,12 @@ export function Header() {
         <span className="brand-mark__text">Booksmart</span>
       </Link>
 
-      <SearchBar />
-
-      <CartPopUp />
-
-      {/* Indicador del carrito con el total de unidades agregadas */}
-      {/* <Link
-        className="bag-button"
-        to="/cart"
-        aria-label={`Ver carrito, ${itemCount} ${itemCount === 1 ? "unidad" : "unidades"}`}
-      >
-        <span className="bag-button__text">Carrito</span>
-        <span className="bag-button__count">{itemCount}</span>
-      </Link> */}
+      {esCheckout ? (
+        <></> 
+        ) : (
+        <><SearchBar /> <CartPopUp /></>
+        )
+      }
     </header>
   )
 }

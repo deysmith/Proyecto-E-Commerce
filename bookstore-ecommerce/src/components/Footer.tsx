@@ -2,7 +2,7 @@ export function Footer() {
   return (
     <footer className="catalog-footer">
       <span>
-        Laboratorio / Comercio Electrónico
+        Comercio Electrónico
       </span>
 
       <span>

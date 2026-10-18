@@ -114,7 +114,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="catalog-shell">
-      <Header />
+      <Header esCheckout={true}/>
 
       <main className="cart-page">
         <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
