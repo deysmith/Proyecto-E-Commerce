@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type MouseEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
@@ -15,6 +15,7 @@ import { construirOrden, generarNumeroOrden } from "../features/ordenes/OrderBui
 import { cargarOrdenes, guardarOrden } from "../features/ordenes/OrderStorage"
 import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
+import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -34,6 +35,8 @@ export default function CheckoutPage() {
   const [errorGuardado, setErrorGuardado] = useState<string | null>(null)
   // true cuando los formularios muestran sus errores desde el inicio
   const [forzarErrores, setForzarErrores] = useState(false)
+  // true cuando el usuario intenta salir del checkout y se muestra la ventana de confirmación
+  const [destinoSalida, setDestinoSalida] = useState<string | null>(null)
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -65,8 +68,9 @@ export default function CheckoutPage() {
       ? orden.numero
       : generarNumeroOrden(cargarOrdenes().map((guardada) => guardada.numero))
 
-    // Se construye la nueva orden con los datos del checkout y del carrito
+    // Si es la misma orden pendiente, se conservan sus intentos de pago para que volver al resumen no los reinicie.
     const nuevaOrden = construirOrden({ numero, items, totales: totals, comprador, entrega })
+    if (orden && orden.estadoOrden === "pendiente") nuevaOrden.intentosPago = orden.intentosPago ?? 0
 
     if (!guardarOrden(nuevaOrden)) {
       setErrorGuardado("No pudimos guardar tu orden. Revisa que tu navegador permita guardar datos e inténtalo de nuevo.")
@@ -78,6 +82,24 @@ export default function CheckoutPage() {
     irAPaso(3)
   }
 
+  function pedirSalida(destino: string) {
+    setDestinoSalida(destino)
+  }
+
+  // Para los enlaces: se evita la navegación normal y se pide la confirmación
+  function alHacerClicEnEnlace(destino: string) {
+    return (evento: MouseEvent<HTMLAnchorElement>) => {
+      evento.preventDefault()
+      pedirSalida(destino)
+    }
+  }
+
+  function confirmarSalida() {
+    const destino = destinoSalida
+    setDestinoSalida(null)
+    if (destino) navigate(destino)
+  }
+  
   /**
    * Pago aprobado: la orden ya está confirmada y guardada. Se pasa a la pantalla de confirmación y se vacía el carrito.
    */
@@ -114,13 +136,13 @@ export default function CheckoutPage() {
 
   return (
     <div className="catalog-shell">
-      <Header esCheckout={true}/>
+      <Header esCheckout={true} onSalir={pedirSalida} />
 
       <main className="cart-page">
         <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
-          <Link to="/">Catálogo</Link>
+          <Link to="/" onClick={alHacerClicEnEnlace("/")}>Catálogo</Link>
           <span aria-hidden="true">/</span>
-          <Link to="/cart">Carrito</Link>
+          <Link to="/cart" onClick={alHacerClicEnEnlace("/cart")}>Carrito</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">Checkout</span>
         </nav>
@@ -146,6 +168,7 @@ export default function CheckoutPage() {
                 onCambio={setComprador}
                 onContinuar={() => avanzarDesde(0)}
                 mostrarErroresInicial={forzarErrores}
+                onVolverAlCarrito={() => pedirSalida("/cart")}
               />
             )}
 
@@ -182,13 +205,19 @@ export default function CheckoutPage() {
 
           {paso < 2 && (
             <CartSummary>
-              <Link to="/cart" className="checkout-summary__edit">Editar carrito</Link>
+              <Link to="/cart" className="checkout-summary__edit" onClick={alHacerClicEnEnlace("/cart")}>Editar carrito</Link>
             </CartSummary>
           )}
         </div>
       </main>
 
       <Footer />
+
+      <ConfirmarSalida
+        abierto={destinoSalida !== null}
+        onConfirmar={confirmarSalida}
+        onCancelar={() => setDestinoSalida(null)}
+      />
     </div>
   )
 }

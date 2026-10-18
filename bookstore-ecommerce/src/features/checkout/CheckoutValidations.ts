@@ -60,13 +60,25 @@ export function limpiarTelefono(valor: string): string {
 }
 
 /**
- * Teléfono: obligatorio, número de Costa Rica de 8 dígitos.
+ * Los números de Costa Rica nunca empiezan con 0, 1, 3 ni 9.
+ * Sirve para avisarle al usuario apenas escribe el primer dígito.
+ */
+export function prefijoTelefonoInvalido(valor: string): boolean {
+  return /^[0139]/.test(limpiarTelefono(valor))
+}
+
+/**
+ * Teléfono: obligatorio, número de Costa Rica de 8 dígitos que empieza con 2, 4, 5, 6, 7 u 8.
  * Acepta formatos como 8888-8888, 8888 8888 o +506 8888 8888.
  */
 export function validarTelefono(valor: string): string {
   if (valor.trim() === "") return "Ingresa tu número de teléfono."
 
-  if (!/^[2-8]\d{7}$/.test(limpiarTelefono(valor))) {
+  if (prefijoTelefonoInvalido(valor)) {
+    return "En Costa Rica ese número de teléfono no es válido. Los números empiezan con 2, 4, 5, 6, 7 u 8."
+  }
+
+  if (!/^[24-8]\d{7}$/.test(limpiarTelefono(valor))) {
     return "Escribe un teléfono de 8 dígitos, por ejemplo 8888-8888."
   }
 

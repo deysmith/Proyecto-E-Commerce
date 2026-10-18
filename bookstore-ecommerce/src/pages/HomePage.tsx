@@ -11,7 +11,9 @@ import { CatalogResults } from "../features/catalog/CatalogResults"
 export default function HomePage() {
   return (
     <div className="catalog-shell">
-      <Header />
+      <div className="catalog-header-fijo">
+        <Header />
+      </div>
       <Configure
         hitsPerPage={12}
         typoTolerance={true}

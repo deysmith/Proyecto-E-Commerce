@@ -73,11 +73,15 @@ export default function ConfirmationPage() {
           </>
         ) : (
           <section className="cart-empty" aria-live="polite">
-            <h2>{orden ? "Esta orden aún no está confirmada" : "No encontramos esta orden"}</h2>
+            <h2>
+              {!orden ? "No encontramos esta orden" : orden.estadoOrden === "fallida" ? "Esta orden falló" : "Esta orden aún no está confirmada"}
+            </h2>
             <p>
-              {orden
-                ? "Su pago no ha sido aprobado, por eso no la mostramos como una compra completada. Puedes volver a tu carrito e intentar de nuevo."
-                : "Revisa que el número de orden sea correcto. Si acabas de comprar, vuelve al catálogo e inténtalo otra vez."}
+              {!orden
+                ? "Revisa que el número de orden sea correcto. Si acabas de comprar, vuelve al catálogo e inténtalo otra vez."
+                : orden.estadoOrden === "fallida"
+                  ? "No pudimos procesar el pago después de varios intentos, por eso la orden quedó como fallida. No se te cobró nada. Vuelve a tu carrito y realiza la compra de nuevo."
+                  : "Su pago no ha sido aprobado, por eso no la mostramos como una compra completada. Puedes volver a tu carrito e intentar de nuevo."}
             </p>
             <Link to={orden ? "/cart" : "/"} className="cart-empty__button">
               {orden ? "Ir al carrito" : "Explorar el catálogo"}

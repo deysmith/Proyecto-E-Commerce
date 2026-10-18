@@ -13,6 +13,7 @@ import {
   type CampoTarjeta,
   type DatosTarjetaForm,
 } from "./CardValidations"
+import { MarcasTarjeta } from "./MarcasTarjeta"
 import type { DatosTarjeta } from "./PaymentTypes"
 
 interface PaymentGatewayFormProps {
@@ -69,7 +70,7 @@ export function PaymentGatewayForm({ total, procesando, aviso, esReintento, onPa
     <section className="pago" aria-labelledby="pago-titulo">
       <div className="pago__head">
         <h3 id="pago-titulo" className="pago__title">Pago con tarjeta</h3>
-        <p className="pago__marcas">Visa · Mastercard · American Express</p>
+        <MarcasTarjeta marcaDetectada={marca} />
       </div>
 
       <form className="pago__form" onSubmit={enviar} noValidate>
