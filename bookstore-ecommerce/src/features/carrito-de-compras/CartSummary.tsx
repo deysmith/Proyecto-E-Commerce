@@ -18,7 +18,7 @@ export function CartSummary({ children }: CartSummaryProps) {
   const { totalUnidades, subtotal, iva, envio, total } = totals
 
   const faltaParaGratis = Math.max(0, ENVIO_GRATIS_DESDE - subtotal)
-  const progreso = Math.min(100, Math.round((subtotal / ENVIO_GRATIS_DESDE) * 100))
+  const progreso = Math.min(100, Math.floor((subtotal / ENVIO_GRATIS_DESDE) * 100))
 
   return (
     <aside className="cart-summary" aria-label="Resumen de compra">
@@ -29,7 +29,7 @@ export function CartSummary({ children }: CartSummaryProps) {
           <TruckIcon />
           {faltaParaGratis > 0 ? (
             <span>
-              Te faltan <strong>{formatPrice(faltaParaGratis)}</strong> para el envío gratis
+              Te faltan <strong>{formatPrice(faltaParaGratis)}</strong> en libros para el envío gratis
             </span>
           ) : (
             <span>
@@ -49,6 +49,19 @@ export function CartSummary({ children }: CartSummaryProps) {
           <span style={{ width: `${progreso}%` }} />
         </div>
       </div>
+
+      {faltaParaGratis > 0 && (
+        <>
+          <div className="cart-shipping__scale" aria-hidden="true">
+            <span>{formatPrice(subtotal)}</span>
+            <span>{formatPrice(ENVIO_GRATIS_DESDE)}</span>
+          </div>
+          <p className="cart-shipping__hint">
+            El envío gratis se calcula solo con el subtotal de los libros, sin IVA ni envío. Por eso el total puede
+            superar {formatPrice(ENVIO_GRATIS_DESDE)} y aun así faltar para el envío gratis.
+          </p>
+        </>
+      )}
 
       <dl className="cart-summary__rows" aria-live="polite">
         <div>
@@ -74,7 +87,7 @@ export function CartSummary({ children }: CartSummaryProps) {
         <strong>{formatPrice(total)}</strong>
       </div>
 
-      <p className="cart-summary__note">Incluye IVA. Envío gratis desde {formatPrice(ENVIO_GRATIS_DESDE)}.</p>
+      <p className="cart-summary__note">El total incluye IVA y envío. Envío gratis con un subtotal de libros desde {formatPrice(ENVIO_GRATIS_DESDE)}.</p>
 
       {children}
     </aside>

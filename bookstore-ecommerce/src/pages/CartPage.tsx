@@ -65,7 +65,7 @@ export default function CartPage() {
         </div>
 
         {items.length === 0 ? (
-          <CartEmpty />
+          <CartEmpty texto={"Agrega libros desde el catálogo y aquí vas a ver el resumen de tu compra."} />
         ) : (
           <div className="cart-layout">
             <section className="cart-panel" aria-label="Libros en el carrito">
@@ -86,8 +86,11 @@ export default function CartPage() {
               </div>
             </section>
 
-            {/* En el Proyecto 2 aquí adentro va el botón para ir al checkout */}
-            <CartSummary />
+            <CartSummary>
+              <Link to="/checkout" className="checkout-btn checkout-btn--block">
+                Continuar al checkout
+              </Link>
+            </CartSummary>
           </div>
         )}
       </main>

@@ -1,26 +1,49 @@
-import { HashRouter, Routes, Route } from "react-router-dom"
+import { HashRouter, Routes, Route, Link } from "react-router-dom"
 import { InstantSearch } from "react-instantsearch"
 import { searchClient } from "./services/algoliaService"
 import HomePage from "./pages/HomePage"
 import DetailPage from "./pages/DetailPage"
 import CartPage from "./pages/CartPage"
+import CheckoutPage from "./pages/CheckoutPage"
+import ConfirmationPage from "./pages/ConfirmationPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
+import { ErrorBoundary } from "./components/ErrorBoundary"
+
+// Pantalla para direcciones que no existen
+function NoEncontrada() {
+  return (
+    <main className="error-page">
+      <div className="error-page__card">
+        <h1 className="error-page__title">Página no encontrada</h1>
+        <p className="error-page__text">La dirección que buscas no existe o fue movida.</p>
+        <div className="error-page__actions">
+          <Link to="/" className="checkout-btn">Ir al catálogo</Link>
+        </div>
+      </div>
+    </main>
+  )
+}
 
 export default function App() {
   return (
-    <HashRouter>
-      <CartProvider>
-        <InstantSearch
-          searchClient={searchClient}
-          indexName={import.meta.env.VITE_INDEX_NAME}
-        >
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/producto/:id" element={<DetailPage />} />
-            <Route path="/cart" element={<CartPage />}/>
-          </Routes>
-        </InstantSearch>
-      </CartProvider>
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <CartProvider>
+          <InstantSearch
+            searchClient={searchClient}
+            indexName={import.meta.env.VITE_INDEX_NAME}
+          >
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/producto/:id" element={<DetailPage />} />
+              <Route path="/cart" element={<CartPage />}/>
+              <Route path="/checkout" element={<CheckoutPage />}/>
+              <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
+              <Route path="*" element={<NoEncontrada />} />
+            </Routes>
+          </InstantSearch>
+        </CartProvider>
+      </HashRouter>
+    </ErrorBoundary>
   )
 }
