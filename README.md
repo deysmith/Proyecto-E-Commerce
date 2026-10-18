@@ -302,7 +302,7 @@ como fuente para GitHub Pages.
 ### Página Web
 
 **Aplicación:**  
-https://deysmith.github.io/Proyecto-E-Commerce/
+[Booksmart](https://deysmith.github.io/Proyecto-E-Commerce/)
 
 
 ---
