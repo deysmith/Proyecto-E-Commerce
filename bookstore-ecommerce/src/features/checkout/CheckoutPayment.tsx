@@ -33,28 +33,48 @@ const MENSAJE_ERROR = "Ocurrió un problema con el servicio de pago, por eso tu 
 export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onVolver }: CheckoutPaymentProps) {
   const [procesando, setProcesando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
+  const [terminosAceptados, setTerminosAceptados] = useState(orden.aceptacionTerminos.aceptado)
 
   // El estado "procesando" se actualiza hasta el siguiente render, así que un doble clic muy rápido podría mandar dos pagos. Esta bandera cambia al instante y lo evita.
   const enviandoPago = useRef(false)
 
   async function pagar(tarjeta: DatosTarjeta) {
+    if (!terminosAceptados) {
+      return
+    }
+
     if (enviandoPago.current) return
+
+    const ordenConAceptacion: Orden = {
+      ...orden,
+      aceptacionTerminos: {
+        aceptado: true,
+        fecha: orden.aceptacionTerminos.fecha ?? new Date().toISOString(),
+      },
+    }
+
+    if (!guardarOrden(ordenConAceptacion)) {
+      setAviso("No pudimos guardar la aceptación de los términos. Revisa que tu navegador permita guardar datos e inténtalo de nuevo.")
+      return
+    }
+
     enviandoPago.current = true
     setProcesando(true)
     setAviso(null)
+    onOrdenActualizada(ordenConAceptacion)
 
     let respuesta: RespuestaPago
     try {
       respuesta = await procesarPagoSandbox({
-        orderId: orden.numero,
-        amount: orden.montos.total,
-        currency: orden.moneda,
+        orderId: ordenConAceptacion.numero,
+        amount: ordenConAceptacion.montos.total,
+        currency: ordenConAceptacion.moneda,
         card: tarjeta,
       })
     } catch {
       // Si el servicio lanza una excepción, se trata igual que un error del servicio
       respuesta = {
-        orderId: orden.numero,
+        orderId: ordenConAceptacion.numero,
         status: "PAYMENT_ERROR",
         transactionId: null,
         message: "No se pudo contactar al servicio de pago.",
@@ -64,7 +84,7 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
     }
 
     // La orden cambia según el resultado y se guarda
-    const ordenActualizada = aplicarResultadoPago(orden, respuesta)
+    const ordenActualizada = aplicarResultadoPago(ordenConAceptacion, respuesta)
     guardarOrden(ordenActualizada)
 
     enviandoPago.current = false
@@ -129,6 +149,10 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
           aviso={aviso}
           esReintento={orden.estadoPago !== "pendiente"}
           onPagar={pagar}
+          terminosAceptados={terminosAceptados}
+          onCambiarTerminos={(aceptados) => {
+            setTerminosAceptados(aceptados)
+          }}
         />
       )}
 

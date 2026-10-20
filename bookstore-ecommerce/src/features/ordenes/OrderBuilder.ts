@@ -100,5 +100,9 @@ export function construirOrden({ numero, items, totales, comprador, entrega }: D
     moneda: "CRC",
     estadoOrden: "pendiente",
     estadoPago: "pendiente",
+    aceptacionTerminos: {
+      aceptado: false,
+      fecha: null,
+    },
   }
 }

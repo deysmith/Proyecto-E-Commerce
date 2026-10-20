@@ -134,6 +134,12 @@
 .pago__campos { min-width: 0; margin: 0; padding: 0; border: 0; }
 .pago__campos:disabled { opacity: .75; }
 .pago__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.pago__terminos { margin: 0 0 20px; }
+.pago__terminos-control { display: flex; align-items: flex-start; gap: 6px; color: var(--color-text-muted); font-size: 14px; line-height: 1.5; }
+.pago__terminos-control label { cursor: pointer; }
+.pago__terminos input { flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--color-primary); }
+.pago__terminos a { color: var(--color-primary); font-weight: 700; text-underline-offset: 3px; }
+.pago__terminos-error { margin: 8px 0 0 27px; color: #8e3823; font-size: 13px; font-weight: 600; }
 .pago__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
 .pago__nota { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 0; color: var(--color-text-faint); font-size: 12px; line-height: 1.5; }
 .pago__nota svg { flex: none; margin-top: 2px; }
