@@ -31,7 +31,13 @@ const ORDEN_CAMPOS: CampoTarjeta[] = ["nombre", "numero", "vencimiento", "cvc"]
  * Muestra un formulario para que el usuario escriba los datos de la tarjeta y envía el pago al servicio simulado.
  * No se guarda la tarjeta completa en ningún lado: solo se envía al servicio y se guarda la marca y los últimos 4 dígitos.
  */
-export function PaymentGatewayForm({ total, procesando, aviso, esReintento, onPagar }: PaymentGatewayFormProps) {
+export function PaymentGatewayForm({
+  total,
+  procesando,
+  aviso,
+  esReintento,
+  onPagar,
+}: PaymentGatewayFormProps) {
   const [datos, setDatos] = useState<DatosTarjetaForm>(tarjetaVacia)
   const [tocados, setTocados] = useState<Partial<Record<CampoTarjeta, boolean>>>({})
   const [intentoPagar, setIntentoPagar] = useState(false)

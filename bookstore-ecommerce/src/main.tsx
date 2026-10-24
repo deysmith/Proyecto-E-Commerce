@@ -4,6 +4,7 @@ import './styles/index.css'
 import './styles/App.css'
 import './styles/Cart.css'
 import './styles/Checkout.css'
+import './styles/Legal.css'
 import './i18n/config.ts'
 import App from './App.tsx'
 

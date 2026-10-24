@@ -39,6 +39,14 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
 
   async function pagar(tarjeta: DatosTarjeta) {
     if (enviandoPago.current) return
+
+    // La aceptación de los términos ya viene registrada en la orden (se pide en el resumen).
+    // Si por alguna razón no está, no se cobra nada y se le indica al usuario dónde aceptarlos.
+    if (!orden.aceptacionTerminos.aceptado) {
+      setAviso("Para pagar primero debes aceptar los Términos y Condiciones en el resumen de tu compra.")
+      return
+    }
+
     enviandoPago.current = true
     setProcesando(true)
     setAviso(null)
@@ -114,6 +122,12 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
             <dt>Estado del pago</dt>
             <dd><EstadoPagoChip estado={orden.estadoPago} /></dd>
           </div>
+          {orden.aceptacionTerminos.aceptado && orden.aceptacionTerminos.fecha && (
+            <div>
+              <dt>Términos y políticas</dt>
+              <dd>Aceptados el {formatDate(orden.aceptacionTerminos.fecha)}</dd>
+            </div>
+          )}
         </dl>
       </div>
 
