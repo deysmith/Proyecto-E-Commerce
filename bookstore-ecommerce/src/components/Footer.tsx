@@ -11,11 +11,6 @@ const legalLinks = [
 export function Footer() {
   return (
     <footer className="catalog-footer">
-      <div className="catalog-footer__details">
-        <span>Comercio Electrónico</span>
-        <span>Limón, Costa Rica · CRC</span>
-      </div>
-
       <nav className="catalog-footer__legal" aria-label="Información y políticas">
         <ul>
           {legalLinks.map(({ to, label }) => (
@@ -25,6 +20,12 @@ export function Footer() {
           ))}
         </ul>
       </nav>
+
+      <div className="catalog-footer__details">
+        <span>©2026 Booksmart</span>
+        <span>Limón, Costa Rica · CRC</span>
+      </div>
+
     </footer>
   )
 }
