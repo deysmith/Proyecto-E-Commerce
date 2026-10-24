@@ -16,6 +16,7 @@ import { cargarOrdenes, guardarOrden } from "../features/ordenes/OrderStorage"
 import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
+import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -37,10 +38,19 @@ export default function CheckoutPage() {
   const [forzarErrores, setForzarErrores] = useState(false)
   // true cuando el usuario intenta salir del checkout y se muestra la ventana de confirmación
   const [destinoSalida, setDestinoSalida] = useState<string | null>(null)
+  // Aceptación de los términos y las políticas (se pide en el resumen)
+  const [terminosAceptados, setTerminosAceptados] = useState(false)
+  // true cuando intentó confirmar sin aceptar los términos
+  const [errorTerminos, setErrorTerminos] = useState(false)
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
     window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  function cambiarTerminos(aceptados: boolean) {
+    setTerminosAceptados(aceptados)
+    if (aceptados) setErrorTerminos(false)
   }
 
   function avanzarDesde(pasoActual: number) {
@@ -50,6 +60,7 @@ export default function CheckoutPage() {
 
   /**
    * Confirmacion de la compra: se valida todo, se genera la orden y se guarda en localStorage.
+   * Si no se aceptaron los términos y las políticas no se genera la orden: se muestra el error y el foco va a la casilla.
    * Si ya había una orden pendiente, se mantiene su número y se reemplaza con los datos nuevos.
    * Si no, se genera un número único nuevo.
    * Si no se puede guardar la orden, se muestra un error y no se avanza.
@@ -63,13 +74,19 @@ export default function CheckoutPage() {
       return
     }
 
+    if (!terminosAceptados) {
+      setErrorTerminos(true)
+      document.getElementById(ID_ACEPTAR_TERMINOS)?.focus()
+      return
+    }
+
     // Numero de orden: si ya se generó uno antes, se mantiene; si no, se genera uno nuevo y único
     const numero = orden && orden.estadoOrden === "pendiente"
       ? orden.numero
       : generarNumeroOrden(cargarOrdenes().map((guardada) => guardada.numero))
 
     // Si es la misma orden pendiente, se conservan sus intentos de pago para que volver al resumen no los reinicie.
-    const nuevaOrden = construirOrden({ numero, items, totales: totals, comprador, entrega })
+    const nuevaOrden = construirOrden({ numero, items, totales: totals, comprador, entrega, terminosAceptados })
     if (orden && orden.estadoOrden === "pendiente") nuevaOrden.intentosPago = orden.intentosPago ?? 0
 
     if (!guardarOrden(nuevaOrden)) {
@@ -187,6 +204,9 @@ export default function CheckoutPage() {
                 comprador={comprador}
                 entrega={entrega}
                 errorGuardado={errorGuardado}
+                terminosAceptados={terminosAceptados}
+                errorTerminos={errorTerminos}
+                onCambiarTerminos={cambiarTerminos}
                 onEditar={irAPaso}
                 onAtras={() => irAPaso(1)}
                 onConfirmar={confirmarCompra}
@@ -211,7 +231,7 @@ export default function CheckoutPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer onSalir={pedirSalida} />
 
       <ConfirmarSalida
         abierto={destinoSalida !== null}

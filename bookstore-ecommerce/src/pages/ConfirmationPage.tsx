@@ -58,6 +58,9 @@ export default function ConfirmationPage() {
                 {orden.pago?.idTransaccion && (
                   <div><dt>Transacción</dt><dd>{orden.pago.idTransaccion}</dd></div>
                 )}
+                {orden.aceptacionTerminos?.aceptado && orden.aceptacionTerminos.fecha && (
+                  <div><dt>Términos y políticas</dt><dd>Aceptados el {formatDate(orden.aceptacionTerminos.fecha)}</dd></div>
+                )}
               </dl>
             </section>
 
