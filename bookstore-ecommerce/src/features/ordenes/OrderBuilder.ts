@@ -2,6 +2,7 @@ import type { CartItem } from "../carrito-de-compras/CartReducer"
 import { getItemSubtotal, type CartTotals } from "../carrito-de-compras/CartCalculations"
 import type { DatosComprador, DatosEntrega } from "../checkout/CheckoutTypes"
 import { nombreCanton, nombreDistrito, nombreProvincia } from "../checkout/CheckoutLocations"
+import { VERSION_LEGAL } from "../legal/InfoTienda"
 import type { EntregaOrden, Orden, ProductoOrden } from "./OrderTypes"
 
 /**
@@ -75,15 +76,20 @@ interface DatosParaOrden {
   totales: CartTotals
   comprador: DatosComprador
   entrega: DatosEntrega
+  // Si el cliente aceptó los términos y las políticas en el resumen
+  terminosAceptados: boolean
 }
 
 /**
  * Arma la orden. Siempre nace con estado "pendiente" y pago "pendiente": todavía no se ha intentado cobrar nada.
+ * La aceptación de los términos se registra aquí, con su fecha y la versión de los documentos que se aceptaron.
  */
-export function construirOrden({ numero, items, totales, comprador, entrega }: DatosParaOrden): Orden {
+export function construirOrden({ numero, items, totales, comprador, entrega, terminosAceptados }: DatosParaOrden): Orden {
+  const ahora = new Date().toISOString()
+
   return {
     numero,
-    fecha: new Date().toISOString(),
+    fecha: ahora,
     comprador: {
       nombreCompleto: comprador.nombreCompleto.trim(),
       correo: comprador.correo.trim(),
@@ -101,8 +107,9 @@ export function construirOrden({ numero, items, totales, comprador, entrega }: D
     estadoOrden: "pendiente",
     estadoPago: "pendiente",
     aceptacionTerminos: {
-      aceptado: false,
-      fecha: null,
+      aceptado: terminosAceptados,
+      fecha: terminosAceptados ? ahora : null,
+      version: terminosAceptados ? VERSION_LEGAL : null,
     },
   }
 }

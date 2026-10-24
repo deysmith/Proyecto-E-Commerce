@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react"
-import { Link } from "react-router-dom"
 import { formatPrice } from "../../utils/formatPrice"
 import { CheckoutField } from "../checkout/CheckoutField"
 import { CheckoutErrorBanner } from "../checkout/CheckoutErrorBanner"
@@ -23,8 +22,6 @@ interface PaymentGatewayFormProps {
   aviso: string | null
   esReintento: boolean
   onPagar: (tarjeta: DatosTarjeta) => void
-  terminosAceptados: boolean
-  onCambiarTerminos: (aceptados: boolean) => void
 }
 
 const ORDEN_CAMPOS: CampoTarjeta[] = ["nombre", "numero", "vencimiento", "cvc"]
@@ -40,13 +37,10 @@ export function PaymentGatewayForm({
   aviso,
   esReintento,
   onPagar,
-  terminosAceptados,
-  onCambiarTerminos,
 }: PaymentGatewayFormProps) {
   const [datos, setDatos] = useState<DatosTarjetaForm>(tarjetaVacia)
   const [tocados, setTocados] = useState<Partial<Record<CampoTarjeta, boolean>>>({})
   const [intentoPagar, setIntentoPagar] = useState(false)
-  const [errorTerminos, setErrorTerminos] = useState(false)
 
   // Los errores se calculan en cada render a partir de lo que hay escrito
   const errores = validarTarjeta(datos)
@@ -67,13 +61,6 @@ export function PaymentGatewayForm({
   function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
     setIntentoPagar(true)
-
-    if (!terminosAceptados) {
-      setErrorTerminos(true)
-      document.getElementById("aceptar-terminos")?.focus()
-      return
-    }
-    setErrorTerminos(false)
 
     // Si hay errores no se envía nada y se lleva el foco al primer campo con problema
     const primerError = ORDEN_CAMPOS.find((campo) => errores[campo])
@@ -97,31 +84,6 @@ export function PaymentGatewayForm({
 
         <fieldset className="pago__campos" disabled={procesando}>
           <legend className="pago__sr">Datos de la tarjeta</legend>
-
-          <div className="pago__terminos">
-            <div className="pago__terminos-control">
-              <input
-                id="aceptar-terminos"
-                type="checkbox"
-                checked={terminosAceptados}
-                aria-invalid={errorTerminos}
-                aria-describedby={errorTerminos ? "error-terminos" : undefined}
-                onChange={(evento) => {
-                  onCambiarTerminos(evento.target.checked)
-                  setErrorTerminos(false)
-                }}
-              />
-              <label htmlFor="aceptar-terminos">Acepto los</label>
-              <Link to="/terminos-y-condiciones" target="_blank" rel="noreferrer">
-                Términos y Condiciones
-              </Link>
-            </div>
-            {errorTerminos && (
-              <p id="error-terminos" className="pago__terminos-error" role="alert">
-                Debes aceptar los Términos y Condiciones para continuar con el pago.
-              </p>
-            )}
-          </div>
 
           <div className="pago__grid">
             <CheckoutField

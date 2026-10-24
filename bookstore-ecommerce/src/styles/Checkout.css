@@ -134,12 +134,17 @@
 .pago__campos { min-width: 0; margin: 0; padding: 0; border: 0; }
 .pago__campos:disabled { opacity: .75; }
 .pago__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.pago__terminos { margin: 0 0 20px; }
-.pago__terminos-control { display: flex; align-items: flex-start; gap: 6px; color: var(--color-text-muted); font-size: 14px; line-height: 1.5; }
-.pago__terminos-control label { cursor: pointer; }
-.pago__terminos input { flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--color-primary); }
-.pago__terminos a { color: var(--color-primary); font-weight: 700; text-underline-offset: 3px; }
-.pago__terminos-error { margin: 8px 0 0 27px; color: #8e3823; font-size: 13px; font-weight: 600; }
+.terminos { margin-top: 26px; padding: 18px 20px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-surface); transition: border-color .2s ease, background .2s ease; }
+.terminos.has-error { border-color: #b34b30; background: #f6e9e4; }
+.terminos__control { display: flex; align-items: flex-start; gap: 12px; }
+.terminos__control input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--color-primary); cursor: pointer; }
+.terminos__control label { color: var(--color-text-muted); font-size: 14.5px; line-height: 1.65; cursor: pointer; }
+.terminos__control a { color: var(--color-primary); font-weight: 700; text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.terminos__control a:hover { color: var(--color-accent-strong); }
+.terminos__control a:focus-visible, .terminos__control input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+.terminos__obligatorio { color: var(--color-accent-strong); font-weight: 700; }
+.terminos__nota { margin: 8px 0 0 32px; color: var(--color-text-faint); font-size: 12.5px; line-height: 1.5; }
+.terminos__error { margin: 10px 0 0 32px; color: #8e3823; font-size: 13.5px; font-weight: 600; line-height: 1.5; }
 .pago__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
 .pago__nota { display: flex; align-items: flex-start; gap: 8px; margin: 16px 0 0; color: var(--color-text-faint); font-size: 12px; line-height: 1.5; }
 .pago__nota svg { flex: none; margin-top: 2px; }

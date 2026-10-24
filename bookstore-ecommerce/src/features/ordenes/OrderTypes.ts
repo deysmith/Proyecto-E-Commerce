@@ -66,9 +66,12 @@ export interface Orden {
   moneda: "CRC"
   estadoOrden: EstadoOrden
   estadoPago: EstadoPago
+  // Aceptación de los términos y políticas. Se registra al generar la orden, con la versión de los documentos
+  // que el cliente aceptó (opcional porque las órdenes guardadas antes de tener versión no la tienen)
   aceptacionTerminos: {
     aceptado: boolean
     fecha: string | null
+    version?: string | null
   }
   intentosPago?: number
   pago?: PagoOrden

@@ -33,48 +33,36 @@ const MENSAJE_ERROR = "Ocurrió un problema con el servicio de pago, por eso tu 
 export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onVolver }: CheckoutPaymentProps) {
   const [procesando, setProcesando] = useState(false)
   const [aviso, setAviso] = useState<string | null>(null)
-  const [terminosAceptados, setTerminosAceptados] = useState(orden.aceptacionTerminos.aceptado)
 
   // El estado "procesando" se actualiza hasta el siguiente render, así que un doble clic muy rápido podría mandar dos pagos. Esta bandera cambia al instante y lo evita.
   const enviandoPago = useRef(false)
 
   async function pagar(tarjeta: DatosTarjeta) {
-    if (!terminosAceptados) {
-      return
-    }
-
     if (enviandoPago.current) return
 
-    const ordenConAceptacion: Orden = {
-      ...orden,
-      aceptacionTerminos: {
-        aceptado: true,
-        fecha: orden.aceptacionTerminos.fecha ?? new Date().toISOString(),
-      },
-    }
-
-    if (!guardarOrden(ordenConAceptacion)) {
-      setAviso("No pudimos guardar la aceptación de los términos. Revisa que tu navegador permita guardar datos e inténtalo de nuevo.")
+    // La aceptación de los términos ya viene registrada en la orden (se pide en el resumen).
+    // Si por alguna razón no está, no se cobra nada y se le indica al usuario dónde aceptarlos.
+    if (!orden.aceptacionTerminos.aceptado) {
+      setAviso("Para pagar primero debes aceptar los Términos y Condiciones en el resumen de tu compra.")
       return
     }
 
     enviandoPago.current = true
     setProcesando(true)
     setAviso(null)
-    onOrdenActualizada(ordenConAceptacion)
 
     let respuesta: RespuestaPago
     try {
       respuesta = await procesarPagoSandbox({
-        orderId: ordenConAceptacion.numero,
-        amount: ordenConAceptacion.montos.total,
-        currency: ordenConAceptacion.moneda,
+        orderId: orden.numero,
+        amount: orden.montos.total,
+        currency: orden.moneda,
         card: tarjeta,
       })
     } catch {
       // Si el servicio lanza una excepción, se trata igual que un error del servicio
       respuesta = {
-        orderId: ordenConAceptacion.numero,
+        orderId: orden.numero,
         status: "PAYMENT_ERROR",
         transactionId: null,
         message: "No se pudo contactar al servicio de pago.",
@@ -84,7 +72,7 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
     }
 
     // La orden cambia según el resultado y se guarda
-    const ordenActualizada = aplicarResultadoPago(ordenConAceptacion, respuesta)
+    const ordenActualizada = aplicarResultadoPago(orden, respuesta)
     guardarOrden(ordenActualizada)
 
     enviandoPago.current = false
@@ -134,6 +122,12 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
             <dt>Estado del pago</dt>
             <dd><EstadoPagoChip estado={orden.estadoPago} /></dd>
           </div>
+          {orden.aceptacionTerminos.aceptado && orden.aceptacionTerminos.fecha && (
+            <div>
+              <dt>Términos y políticas</dt>
+              <dd>Aceptados el {formatDate(orden.aceptacionTerminos.fecha)}</dd>
+            </div>
+          )}
         </dl>
       </div>
 
@@ -149,10 +143,6 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
           aviso={aviso}
           esReintento={orden.estadoPago !== "pendiente"}
           onPagar={pagar}
-          terminosAceptados={terminosAceptados}
-          onCambiarTerminos={(aceptados) => {
-            setTerminosAceptados(aceptados)
-          }}
         />
       )}
 

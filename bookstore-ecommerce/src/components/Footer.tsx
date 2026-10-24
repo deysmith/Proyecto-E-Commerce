@@ -1,21 +1,29 @@
+import type { MouseEvent } from "react"
 import { Link } from "react-router-dom"
+import { listaPaginasLegales } from "../features/legal/LegalContent"
 
-const legalLinks = [
-  { to: "/terminos-y-condiciones", label: "Términos y Condiciones" },
-  { to: "/politica-de-devoluciones", label: "Política de Devoluciones" },
-  { to: "/politica-de-envios", label: "Política de Envíos" },
-  { to: "/politica-de-privacidad", label: "Política de Privacidad" },
-  { to: "/preguntas-frecuentes", label: "Preguntas Frecuentes (FAQ)" },
-]
+interface FooterProps {
+  // Solo se usa en el checkout: en vez de salir directo, avisa a la página para pedir confirmación
+  onSalir?: (destino: string) => void
+}
 
-export function Footer() {
+export function Footer({ onSalir }: FooterProps) {
+  // Dentro del checkout salir de la página haría perder los datos escritos, por eso se pide confirmación primero
+  function alHacerClic(destino: string) {
+    return (evento: MouseEvent<HTMLAnchorElement>) => {
+      if (!onSalir) return
+      evento.preventDefault()
+      onSalir(destino)
+    }
+  }
+
   return (
     <footer className="catalog-footer">
       <nav className="catalog-footer__legal" aria-label="Información y políticas">
         <ul>
-          {legalLinks.map(({ to, label }) => (
-            <li key={to}>
-              <Link to={to}>{label}</Link>
+          {listaPaginasLegales.map(({ ruta, titulo }) => (
+            <li key={ruta}>
+              <Link to={ruta} onClick={alHacerClic(ruta)}>{titulo}</Link>
             </li>
           ))}
         </ul>
