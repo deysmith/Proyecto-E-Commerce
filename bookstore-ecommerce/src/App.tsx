@@ -6,6 +6,7 @@ import DetailPage from "./pages/DetailPage"
 import CartPage from "./pages/CartPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import ConfirmationPage from "./pages/ConfirmationPage"
+import LegalPage from "./pages/LegalPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 
@@ -39,6 +40,11 @@ export default function App() {
               <Route path="/cart" element={<CartPage />}/>
               <Route path="/checkout" element={<CheckoutPage />}/>
               <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
+              <Route path="/terminos-y-condiciones" element={<LegalPage page="terminos" />} />
+              <Route path="/politica-de-devoluciones" element={<LegalPage page="devoluciones" />} />
+              <Route path="/politica-de-envios" element={<LegalPage page="envios" />} />
+              <Route path="/politica-de-privacidad" element={<LegalPage page="privacidad" />} />
+              <Route path="/preguntas-frecuentes" element={<LegalPage page="preguntas" />} />
               <Route path="*" element={<NoEncontrada />} />
             </Routes>
           </InstantSearch>
