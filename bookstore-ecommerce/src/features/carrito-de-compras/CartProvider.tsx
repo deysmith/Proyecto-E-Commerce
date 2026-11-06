@@ -5,6 +5,7 @@ import { cartReducer } from "./CartReducer"
 import { getCartTotals } from "./CartCalculations"
 import { loadCart, saveCart } from "./CartStorage"
 import { CartNotification } from "./CartNotification"
+import { recordAnalyticsEvent } from "../analytics/analytics"
 
 /**
  * Proveedor del estado global del carrito (Context API + useReducer).
@@ -32,6 +33,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function addItem(product: ProductRecord) {
     dispatch({ type: "ADD_ITEM", product })
+    recordAnalyticsEvent("add_to_cart", {
+      productId: product.objectID,
+      title: product.productInfo.title,
+    })
     setNotification(`"${product.productInfo.title}" se agregó al carrito`)
   }
 

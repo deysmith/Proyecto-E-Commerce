@@ -1,7 +1,8 @@
 import type { MouseEvent } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
 import { CartPopUp } from "../features/carrito-de-compras/CartPopUp"
+import { useSession } from "../features/session/sessionContext"
 
 interface HeaderProps {
   esCheckout?: boolean
@@ -9,6 +10,9 @@ interface HeaderProps {
 }
 
 export function Header( { esCheckout, onSalir }: HeaderProps) {
+  const { user, signOut } = useSession()
+  const navigate = useNavigate()
+
   function alHacerClicEnLogo(evento: MouseEvent<HTMLAnchorElement>) {
     if (!onSalir) return
     evento.preventDefault()
@@ -29,6 +33,26 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
         <><SearchBar /> <CartPopUp /></>
         )
       }
+
+      <div className="header-account">
+        {user ? (
+          <>
+            <Link to="/analytics" className="header-account__analytics">Analytics</Link>
+            <button
+              type="button"
+              className="header-account__action"
+              onClick={() => {
+                signOut()
+                navigate("/login")
+              }}
+            >
+              Salir
+            </button>
+          </>
+        ) : (
+          <Link to="/login" className="header-account__action">Ingresar</Link>
+        )}
+      </div>
     </header>
   )
 }

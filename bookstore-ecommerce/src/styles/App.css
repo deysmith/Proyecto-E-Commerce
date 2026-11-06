@@ -36,6 +36,10 @@
 .catalog-header nav { display: flex; gap: 30px; }
 .catalog-header nav a { color: var(--color-text-muted); text-decoration: none; font-size: 13px; }
 .catalog-header nav a:hover { color: var(--color-accent-strong); }
+.header-account { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.header-account__analytics, .header-account__action { padding: 0; border: 0; background: transparent; color: var(--color-primary); font-family: inherit; font-size: 12px; font-weight: 700; text-decoration: none; }
+.header-account__analytics:hover, .header-account__action:hover { color: var(--color-accent-strong); }
+.header-account__action { cursor: pointer; }
 
 .brand-mark { text-decoration: none; }
 .bag-button { display: inline-flex; align-items: center; border: 0; background: transparent; color: var(--color-primary); font-size: 13px; text-decoration: none; }

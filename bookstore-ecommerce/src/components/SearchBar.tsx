@@ -5,6 +5,7 @@ import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
 import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
 import { formatPrice } from "../utils/formatPrice";
+import { recordAnalyticsEvent } from "../features/analytics/analytics";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -62,6 +63,7 @@ export function SearchBar() {
 
     clearRefinements()
     addRecentSearch(trimmed)
+    recordAnalyticsEvent("search", { query: trimmed })
     refine(trimmed)
     setQuery(trimmed)
     setIsOpen(false)
@@ -70,7 +72,9 @@ export function SearchBar() {
   }
 
   function goToProduct(hit: ProductRecord) {
-    addRecentSearch(query.trim() || hit.productInfo.title)
+    const searchTerm = query.trim()
+    addRecentSearch(searchTerm || hit.productInfo.title)
+    if (searchTerm) recordAnalyticsEvent("search", { query: searchTerm })
     setIsOpen(false)
     setQuery("")
     navigate(`/producto/${hit.objectID}`)
