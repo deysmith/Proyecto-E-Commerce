@@ -34,7 +34,6 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
         )
       }
 
-      <div className="header-account">
         {user ? (
           <>
             <Link to="/analytics" className="header-account__analytics">Analytics</Link>
@@ -52,7 +51,6 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
         ) : (
           <Link to="/login" className="header-account__action">Ingresar</Link>
         )}
-      </div>
     </header>
   )
 }

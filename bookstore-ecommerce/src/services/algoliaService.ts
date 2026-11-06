@@ -9,7 +9,7 @@ export const searchClient = algoliasearch(
 export async function fetchProductById(objectID: string): Promise<ProductRecord | null> {
   const response = await searchClient.search([
     {
-      indexName: import.meta.env.VITE_INDEX_NAME,
+      indexName: import.meta.env.VITE_INDEX_NAME_PRODUCTS,
       params: {
         filters: `objectID:${objectID}`,
         hitsPerPage: 1,
@@ -32,7 +32,7 @@ export async function fetchSearchSuggestions(query: string, hitsPerPage = 5): Pr
 
   const response = await searchClient.search([
     {
-      indexName: import.meta.env.VITE_INDEX_NAME,
+      indexName: import.meta.env.VITE_INDEX_NAME_PRODUCTS,
       params: { query, hitsPerPage },
     },
   ])
@@ -52,7 +52,7 @@ export async function fetchRandomProducts(count = 10): Promise<ProductRecord[]> 
 
   const response = await searchClient.search([
     {
-      indexName: import.meta.env.VITE_INDEX_NAME,
+      indexName: import.meta.env.VITE_INDEX_NAME_PRODUCTS,
       params: { query: "", hitsPerPage: samplePoolSize },
     },
   ])

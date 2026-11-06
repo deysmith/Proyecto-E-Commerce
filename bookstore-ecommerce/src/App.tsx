@@ -36,7 +36,7 @@ export default function App() {
           <CartProvider>
             <InstantSearch
               searchClient={searchClient}
-              indexName={import.meta.env.VITE_INDEX_NAME}
+              indexName={import.meta.env.VITE_INDEX_NAME_PRODUCTS}
             >
               <Routes>
                 <Route path="/" element={<HomePage />} />

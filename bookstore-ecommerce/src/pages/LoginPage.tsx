@@ -26,8 +26,17 @@ export default function LoginPage() {
   }
 
   return (
+    
     <div className="catalog-shell">
       <Header />
+      <div className="detail-page">
+        <button
+          className="detail-back"
+          onClick={() => navigate(-1)}
+        >
+          Volver
+        </button>
+      </div>
       <main className="session-page">
         <section className="session-panel" aria-labelledby="login-title">
           <p className="eyebrow">Booksmart · Tu espacio</p>
