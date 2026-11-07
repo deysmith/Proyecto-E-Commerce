@@ -6,6 +6,7 @@ import './styles/Analytics.css'
 import './styles/Cart.css'
 import './styles/Checkout.css'
 import './styles/Legal.css'
+import './styles/Personalizacion.css'
 import './i18n/config.ts'
 import App from './App.tsx'
 
