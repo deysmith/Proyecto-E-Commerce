@@ -67,3 +67,24 @@ export async function fetchRandomProducts(count = 10): Promise<ProductRecord[]> 
 
   return shuffled.slice(0, count)
 }
+
+// Trae libros de una categoría, para las recomendaciones personalizadas
+export async function fetchProductsByCategory(category: string, hitsPerPage = 20): Promise<ProductRecord[]> {
+  // Se escapan las comillas para que el filtro de Algolia no se rompa
+  const safeCategory = category.replace(/"/g, '\\"')
+
+  const response = await searchClient.search([
+    {
+      indexName: import.meta.env.VITE_INDEX_NAME_PRODUCTS,
+      params: { query: "", filters: `facets.category:"${safeCategory}"`, hitsPerPage },
+    },
+  ])
+
+  const result = response.results[0]
+
+  if (!result || !("hits" in result)) {
+    return []
+  }
+
+  return result.hits as ProductRecord[]
+}

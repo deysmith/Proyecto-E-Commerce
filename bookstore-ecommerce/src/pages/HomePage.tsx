@@ -5,6 +5,7 @@ import { CatalogIntro } from "../features/catalog/CatalogIntro"
 import { CatalogFilters } from "../features/catalog/CatalogFilters"
 import { CatalogResults } from "../features/catalog/CatalogResults"
 import { RecentlyViewed } from "../features/personalizacion/RecentlyViewed"
+import { Recommendations } from "../features/personalizacion/Recommendations"
 
 /**
  * Componente que representa a la página principal de la página web
@@ -24,7 +25,12 @@ export default function HomePage() {
       />
       <main>
         <CatalogIntro />
-        {!estaBuscando && <RecentlyViewed />}
+        {!estaBuscando && (
+          <>
+            <RecentlyViewed />
+            <Recommendations />
+          </>
+        )}
         <section className="catalog-content">
           <CatalogFilters />
           <CatalogResults />

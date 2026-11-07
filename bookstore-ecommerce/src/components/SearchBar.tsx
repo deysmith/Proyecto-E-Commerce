@@ -5,6 +5,7 @@ import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
 import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";import { formatPrice } from "../utils/formatPrice";
 import { useAnalytics } from "../features/analytics/analyticsContext";
+import { getCategoriaMasComun } from "../features/personalizacion/categoriaFavorita";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -63,7 +64,9 @@ export function SearchBar() {
 
     clearRefinements()
     addRecentSearch(ownerId, trimmed)
-    registrarEvento("search", { query: trimmed })
+    // Categoría más común en las sugerencias de lo que escribió.
+    const categoria = trimmed === query.trim() ? getCategoriaMasComun(suggestions) : null
+    registrarEvento("search", categoria ? { query: trimmed, category: categoria } : { query: trimmed })
     refine(trimmed)
     setQuery(trimmed)
     setIsOpen(false)
@@ -86,7 +89,7 @@ export function SearchBar() {
   function goToProduct(hit: ProductRecord) {
     const searchTerm = query.trim()
     addRecentSearch(ownerId, searchTerm || hit.productInfo.title)
-    if (searchTerm) registrarEvento("search", { query: searchTerm })
+    if (searchTerm) registrarEvento("search", { query: searchTerm, category: hit.facets.category })
     setIsOpen(false)
     setQuery("")
     navigate(`/producto/${hit.objectID}`)
