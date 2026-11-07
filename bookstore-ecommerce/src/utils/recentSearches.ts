@@ -27,6 +27,16 @@ export function addRecentSearch(ownerId: string, term: string) {
   saveHistory(STORAGE_KEY, ownerId, updated)
 }
 
+/**
+ * Elimina una sola búsqueda del historial.
+ */
+export function removeRecentSearch(ownerId: string, term: string) {
+  const updated = getRecentSearches(ownerId).filter(
+    (item) => item.toLowerCase() !== term.toLowerCase()
+  )
+  saveHistory(STORAGE_KEY, ownerId, updated)
+}
+
 export function clearRecentSearches(ownerId: string) {
   clearHistory(STORAGE_KEY, ownerId)
 }

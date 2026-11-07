@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { SearchBox, useClearRefinements, useSearchBox } from "react-instantsearch";
 import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
-import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
-import { formatPrice } from "../utils/formatPrice";
+import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";import { formatPrice } from "../utils/formatPrice";
 import { useAnalytics } from "../features/analytics/analyticsContext";
 
 /**
@@ -72,6 +71,18 @@ export function SearchBar() {
 
   }
 
+  // Borra el historial de búsquedas del usuario o sesión
+  function clearHistory() {
+    clearRecentSearches(ownerId)
+    setRecentSearches([])
+  }
+
+  // Borra solo una búsqueda (la X de cada fila)
+  function removeSearch(term: string) {
+    removeRecentSearch(ownerId, term)
+    setRecentSearches((actuales) => actuales.filter((item) => item !== term))
+  }
+
   function goToProduct(hit: ProductRecord) {
     const searchTerm = query.trim()
     addRecentSearch(ownerId, searchTerm || hit.productInfo.title)
@@ -111,13 +122,22 @@ export function SearchBar() {
           {showRecent && (
             <div>
 
-              <p className="header-search__section-title">
-                Búsquedas recientes
-              </p>
+              <div className="header-search__recent-header">
+                <p className="header-search__section-title">
+                  Búsquedas recientes
+                </p>
+                <button
+                  type="button"
+                  className="header-search__clear"
+                  onClick={clearHistory}
+                >
+                  Limpiar
+                </button>
+              </div>
 
               <ul className="header-search__recent-list">
                 {recentSearches.map((term) => (
-                  <li key={term}>
+                  <li key={term} className="header-search__recent-item">
 
                     <button
                       type="button"
@@ -129,6 +149,16 @@ export function SearchBar() {
                       </span>
 
                       {term}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="header-search__remove"
+                      onClick={() => removeSearch(term)}
+                      aria-label={`Eliminar "${term}" de las búsquedas recientes`}
+                      title="Eliminar"
+                    >
+                      ×
                     </button>
                   </li>
                 ))}
