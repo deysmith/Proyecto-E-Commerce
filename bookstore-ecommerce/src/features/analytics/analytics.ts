@@ -1,3 +1,9 @@
+/**
+ * Tipos y funciones para manejar la analítica de la app. Los eventos se guardan en localStorage y se pueden consultar desde cualquier parte de la app.
+ * Los eventos se guardan con el correo del usuario si hay sesión iniciada, o con el id de la sesión si es un invitado.
+ * Se pueden consultar los eventos de un usuario o sesión con getAnalyticsEvents(userId).
+ * Cuando un invitado inicia sesión, los eventos que hizo en esta sesión pasan a ser de su usuario con moveSessionEventsToUser(email).
+ */
 export type AnalyticsEventType =
   | "login"
   | "search"
@@ -11,6 +17,7 @@ export type AnalyticsEventDetails = Record<string, string | number | boolean>
 export interface AnalyticsEvent {
   id: string
   userId: string
+  sessionId: string
   type: AnalyticsEventType
   timestamp: string
   details: AnalyticsEventDetails
@@ -22,10 +29,13 @@ export interface LocalUser {
   loginAt: string
 }
 
-const USER_STORAGE_KEY = "booksmart_active_user"
-const EVENTS_STORAGE_KEY = "booksmart_analytics_events"
-const SESSION_STORAGE_KEY = "booksmart_analytics_session"
+export const USER_STORAGE_KEY = "booksmart_active_user"
+export const EVENTS_STORAGE_KEY = "booksmart_analytics_events"
+export const SESSION_STORAGE_KEY = "booksmart_analytics_session"
 const MAX_EVENTS = 1000
+
+// Nombre del aviso que se lanza cada vez que cambian los eventos
+export const ANALYTICS_CHANGE_EVENT = "booksmart-analytics-change"
 
 export function getActiveUser(): LocalUser | null {
   try {
@@ -52,15 +62,29 @@ export function getActiveUser(): LocalUser | null {
 
 export function startLocalSession(email: string, name: string): LocalUser {
   const user = { email: email.trim().toLowerCase(), name: name.trim(), loginAt: new Date().toISOString() }
-  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+  try {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+  } catch {
+    // Si el navegador bloquea localStorage la sesión solo dura mientras la página esté abierta
+  }
   return user
 }
 
 export function endLocalSession() {
-  localStorage.removeItem(USER_STORAGE_KEY)
+  try {
+    localStorage.removeItem(USER_STORAGE_KEY)
+  } catch {
+    // No se puede hacer nada si el navegador bloquea localStorage, la sesión se pierde al cerrar la página
+  }
 }
 
-function getSessionId(): string {
+// Respaldo por si el navegador no deja usar sessionStorage
+let memorySessionId: string | null = null
+
+/**
+ * Devuelve el id de la sesión actual. Si no existe uno, lo crea.
+ */
+export function getSessionId(): string {
   try {
     const existingId = sessionStorage.getItem(SESSION_STORAGE_KEY)
     if (existingId) return existingId
@@ -69,29 +93,39 @@ function getSessionId(): string {
     sessionStorage.setItem(SESSION_STORAGE_KEY, sessionId)
     return sessionId
   } catch {
-    return `session-${Date.now()}`
+    if (!memorySessionId) memorySessionId = `session-${Date.now()}`
+    return memorySessionId
   }
 }
 
-export function recordAnalyticsEvent(type: AnalyticsEventType, details: AnalyticsEventDetails = {}) {
-  try {
-    const storedEvents = localStorage.getItem(EVENTS_STORAGE_KEY)
-    const events: AnalyticsEvent[] = storedEvents ? JSON.parse(storedEvents) : []
-    const userId = getActiveUser()?.email ?? getSessionId()
-    events.push({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      userId,
-      type,
-      timestamp: new Date().toISOString(),
-      details,
-    })
-    localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events.slice(-MAX_EVENTS)))
-  } catch {
-    return
-  }
+/**
+ * Dueño de los datos: el correo si hay sesión iniciada, si no el id de la sesión.
+ */
+export function getOwnerId(): string {
+  return getActiveUser()?.email ?? getSessionId()
 }
 
-export function getAnalyticsEvents(userId: string): AnalyticsEvent[] {
+function isValidEvent(event: unknown): event is AnalyticsEvent {
+  return (
+    typeof event === "object" &&
+    event !== null &&
+    "id" in event &&
+    "userId" in event &&
+    typeof event.userId === "string" &&
+    "type" in event &&
+    typeof event.type === "string" &&
+    "timestamp" in event &&
+    typeof event.timestamp === "string" &&
+    "details" in event &&
+    typeof event.details === "object"
+  )
+}
+
+/**
+ * Lee todos los eventos guardados. Si los datos no existen o están corruptos,
+ * devuelve una lista vacía en vez de romper la app.
+ */
+function readEvents(): AnalyticsEvent[] {
   try {
     const storedEvents = localStorage.getItem(EVENTS_STORAGE_KEY)
     if (!storedEvents) return []
@@ -99,17 +133,52 @@ export function getAnalyticsEvents(userId: string): AnalyticsEvent[] {
     const events: unknown = JSON.parse(storedEvents)
     if (!Array.isArray(events)) return []
 
-    return events.filter(
-      (event): event is AnalyticsEvent =>
-        typeof event === "object" &&
-        event !== null &&
-        "userId" in event &&
-        event.userId === userId &&
-        "type" in event &&
-        "timestamp" in event &&
-        "details" in event,
-    )
+    return events.filter(isValidEvent)
   } catch {
     return []
   }
+}
+
+function saveEvents(events: AnalyticsEvent[]) {
+  try {
+    localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events.slice(-MAX_EVENTS)))
+  } catch {
+    // Si no se puede guardar (localStorage lleno o bloqueado) la app sigue funcionando
+  }
+  // Avisa a la app que los eventos cambiaron
+  window.dispatchEvent(new Event(ANALYTICS_CHANGE_EVENT))
+}
+
+/**
+ * Registra un evento en localStorage. Se puede usar desde cualquier parte de la app.
+ */
+export function recordAnalyticsEvent(type: AnalyticsEventType, details: AnalyticsEventDetails = {}) {
+  const events = readEvents()
+  events.push({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    userId: getOwnerId(),
+    sessionId: getSessionId(),
+    type,
+    timestamp: new Date().toISOString(),
+    details,
+  })
+  saveEvents(events)
+}
+
+/**
+ * Devuelve los eventos de un usuario o sesión.
+ */
+export function getAnalyticsEvents(userId: string): AnalyticsEvent[] {
+  return readEvents().filter((event) => event.userId === userId)
+}
+
+/**
+ * Cuando un invitado inicia sesión, los eventos que hizo en esta sesión pasan a ser de su usuario.
+ */
+export function moveSessionEventsToUser(email: string) {
+  const sessionId = getSessionId()
+  const events = readEvents().map((event) =>
+    event.userId === sessionId ? { ...event, userId: email } : event,
+  )
+  saveEvents(events)
 }
