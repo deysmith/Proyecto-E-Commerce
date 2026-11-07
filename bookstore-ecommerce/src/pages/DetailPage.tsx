@@ -10,6 +10,7 @@ import { translateLanguage } from "../utils/language"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { handleAddToCart } from "../utils/handleAddToCart"
 import { useAnalytics } from "../features/analytics/analyticsContext"
+import { addRecentProduct } from "../utils/recentProducts"
 
 
 /**
@@ -25,7 +26,7 @@ export default function DetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const lastTrackedProduct = useRef<string | null>(null)
-  const { registrarEvento } = useAnalytics()
+  const { registrarEvento, ownerId } = useAnalytics()
 
   useEffect(() => {
     if (!id) return
@@ -47,11 +48,13 @@ export default function DetailPage() {
             title: result.productInfo.title,
             category: result.facets.category,
           })
+          // Historial de vistos recientemente del usuario o sesión
+          addRecentProduct(ownerId, result)
         }
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [id, registrarEvento])
+  }, [id, registrarEvento, ownerId])
 
   return (
     <div className="catalog-shell">

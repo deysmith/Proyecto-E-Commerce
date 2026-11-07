@@ -20,7 +20,7 @@ export function SearchBar() {
   const { refine: clearRefinements } = useClearRefinements()
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { registrarEvento } = useAnalytics()
+  const { registrarEvento, ownerId } = useAnalytics()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -54,7 +54,7 @@ export function SearchBar() {
   }, [algoliaQuery])
   
   function openDropdown() {
-    setRecentSearches(getRecentSearches())
+    setRecentSearches(getRecentSearches(ownerId))
     setIsOpen(true)
   }
 
@@ -63,7 +63,7 @@ export function SearchBar() {
     if (!trimmed) return
 
     clearRefinements()
-    addRecentSearch(trimmed)
+    addRecentSearch(ownerId, trimmed)
     registrarEvento("search", { query: trimmed })
     refine(trimmed)
     setQuery(trimmed)
@@ -74,7 +74,7 @@ export function SearchBar() {
 
   function goToProduct(hit: ProductRecord) {
     const searchTerm = query.trim()
-    addRecentSearch(searchTerm || hit.productInfo.title)
+    addRecentSearch(ownerId, searchTerm || hit.productInfo.title)
     if (searchTerm) registrarEvento("search", { query: searchTerm })
     setIsOpen(false)
     setQuery("")
