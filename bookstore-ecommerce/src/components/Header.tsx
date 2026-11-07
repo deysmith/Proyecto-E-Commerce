@@ -35,20 +35,18 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
       }
 
       <div className="header-account">
+        <Link to="/analytics" className="header-account__analytics">Analytics</Link>
         {user ? (
-          <>
-            <Link to="/analytics" className="header-account__analytics">Analytics</Link>
-            <button
-              type="button"
-              className="header-account__action"
-              onClick={() => {
-                signOut()
-                navigate("/login")
-              }}
-            >
-              Salir
-            </button>
-          </>
+          <button
+            type="button"
+            className="header-account__action"
+            onClick={() => {
+              signOut()
+              navigate("/login")
+            }}
+          >
+            Salir
+          </button>
         ) : (
           <Link to="/login" className="header-account__action">Ingresar</Link>
         )}

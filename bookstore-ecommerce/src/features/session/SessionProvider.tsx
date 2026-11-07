@@ -2,6 +2,8 @@ import { useState, type ReactNode } from "react"
 import {
   endLocalSession,
   getActiveUser,
+  getSessionId,
+  moveSessionEventsToUser,
   recordAnalyticsEvent,
   startLocalSession,
 } from "../analytics/analytics"
@@ -12,8 +14,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   function signIn(email: string, name: string) {
     const activeUser = startLocalSession(email, name)
+    // Lo que hizo como invitado en esta sesión pasa a su usuario
+    moveSessionEventsToUser(activeUser.email)
     setUser(activeUser)
-    recordAnalyticsEvent("login")
+    recordAnalyticsEvent("login", {
+      email: activeUser.email,
+      name: activeUser.name,
+      sessionId: getSessionId(),
+    })
   }
 
   function signOut() {

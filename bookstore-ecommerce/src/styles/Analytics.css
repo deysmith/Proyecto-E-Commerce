@@ -201,6 +201,20 @@
   font-size: 13px;
 }
 
+.analytics-activity__empty p {
+  max-width: 560px;
+  margin: 0 0 12px;
+}
+
+.analytics-activity__empty .session-form__submit {
+  text-decoration: none;
+}
+
+.analytics-heading__user a {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
 .analytics-table-wrap {
   width: 100%;
   overflow-x: auto;
