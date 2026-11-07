@@ -17,7 +17,7 @@ import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
-import { recordAnalyticsEvent } from "../features/analytics/analytics"
+import { useAnalytics } from "../features/analytics/analyticsContext"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -44,15 +44,16 @@ export default function CheckoutPage() {
   // true cuando intentó confirmar sin aceptar los términos
   const [errorTerminos, setErrorTerminos] = useState(false)
   const checkoutTracked = useRef(false)
+  const { registrarEvento } = useAnalytics()
 
   useEffect(() => {
     if (items.length === 0 || checkoutTracked.current) return
     checkoutTracked.current = true
-    recordAnalyticsEvent("checkout_start", {
+    registrarEvento("checkout_start", {
       productCount: items.length,
       quantity: items.reduce((total, item) => total + item.quantity, 0),
     })
-  }, [items])
+  }, [items, registrarEvento])
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -132,9 +133,10 @@ export default function CheckoutPage() {
    * Pago aprobado: la orden ya está confirmada y guardada. Se pasa a la pantalla de confirmación y se vacía el carrito.
    */
   function terminarCompra(ordenConfirmada: Orden) {
-    recordAnalyticsEvent("purchase_completed", {
+    registrarEvento("purchase_completed", {
       orderNumber: ordenConfirmada.numero,
       productCount: ordenConfirmada.productos.length,
+      total: ordenConfirmada.montos.total,
     })
     // Se guarda la orden confirmada en la página para que el carrito vacío no active el bloqueo de abajo mientras se cambia de pantalla
     setOrden(ordenConfirmada)

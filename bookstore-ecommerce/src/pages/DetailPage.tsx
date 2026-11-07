@@ -9,7 +9,7 @@ import type { ProductRecord } from "../types/productRecord"
 import { translateLanguage } from "../utils/language"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { handleAddToCart } from "../utils/handleAddToCart"
-import { recordAnalyticsEvent } from "../features/analytics/analytics"
+import { useAnalytics } from "../features/analytics/analyticsContext"
 
 
 /**
@@ -25,6 +25,7 @@ export default function DetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const lastTrackedProduct = useRef<string | null>(null)
+  const { registrarEvento } = useAnalytics()
 
   useEffect(() => {
     if (!id) return
@@ -41,15 +42,16 @@ export default function DetailPage() {
         setProduct(result)
         if (lastTrackedProduct.current !== result.objectID) {
           lastTrackedProduct.current = result.objectID
-          recordAnalyticsEvent("product_view", {
+          registrarEvento("product_view", {
             productId: result.objectID,
             title: result.productInfo.title,
+            category: result.facets.category,
           })
         }
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, registrarEvento])
 
   return (
     <div className="catalog-shell">

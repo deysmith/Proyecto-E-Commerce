@@ -5,7 +5,7 @@ import { cartReducer } from "./CartReducer"
 import { getCartTotals } from "./CartCalculations"
 import { loadCart, saveCart } from "./CartStorage"
 import { CartNotification } from "./CartNotification"
-import { recordAnalyticsEvent } from "../analytics/analytics"
+import { useAnalytics } from "../analytics/analyticsContext"
 
 /**
  * Proveedor del estado global del carrito (Context API + useReducer).
@@ -15,6 +15,7 @@ import { recordAnalyticsEvent } from "../analytics/analytics"
 export function CartProvider({ children }: { children: ReactNode }) {
   // El tercer parámetro (loadCart) inicializa el estado desde localStorage
   const [state, dispatch] = useReducer(cartReducer, undefined, loadCart)
+  const { registrarEvento } = useAnalytics()
   const [notification, setNotification] = useState<string | null>(null)
 
   // Cada vez que cambian los productos se guarda el carrito
@@ -33,9 +34,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function addItem(product: ProductRecord) {
     dispatch({ type: "ADD_ITEM", product })
-    recordAnalyticsEvent("add_to_cart", {
+    // Cada clic en "Agregar al carrito" suma una unidad
+    registrarEvento("add_to_cart", {
       productId: product.objectID,
       title: product.productInfo.title,
+      category: product.facets.category,
+      quantity: 1,
     })
     setNotification(`"${product.productInfo.title}" se agregó al carrito`)
   }

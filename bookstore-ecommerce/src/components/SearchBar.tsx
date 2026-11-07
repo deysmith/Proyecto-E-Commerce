@@ -5,7 +5,7 @@ import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
 import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
 import { formatPrice } from "../utils/formatPrice";
-import { recordAnalyticsEvent } from "../features/analytics/analytics";
+import { useAnalytics } from "../features/analytics/analyticsContext";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -20,6 +20,7 @@ export function SearchBar() {
   const { refine: clearRefinements } = useClearRefinements()
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { registrarEvento } = useAnalytics()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -63,7 +64,7 @@ export function SearchBar() {
 
     clearRefinements()
     addRecentSearch(trimmed)
-    recordAnalyticsEvent("search", { query: trimmed })
+    registrarEvento("search", { query: trimmed })
     refine(trimmed)
     setQuery(trimmed)
     setIsOpen(false)
@@ -74,7 +75,7 @@ export function SearchBar() {
   function goToProduct(hit: ProductRecord) {
     const searchTerm = query.trim()
     addRecentSearch(searchTerm || hit.productInfo.title)
-    if (searchTerm) recordAnalyticsEvent("search", { query: searchTerm })
+    if (searchTerm) registrarEvento("search", { query: searchTerm })
     setIsOpen(false)
     setQuery("")
     navigate(`/producto/${hit.objectID}`)
