@@ -26,6 +26,7 @@ export type CartAction =
   | { type: "DECREASE"; id: string }
   | { type: "REMOVE"; id: string }
   | { type: "CLEAR" }
+  | { type: "LOAD"; items: CartItem[] }
 
 /**
  * Convierte un producto del catálogo al formato que usa el carrito
@@ -86,6 +87,9 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
 
     case "CLEAR":
       return { items: [] }
+
+    case "LOAD":
+      return { items: action.items }
 
     default:
       return state

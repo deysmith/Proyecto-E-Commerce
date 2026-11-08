@@ -251,7 +251,7 @@ Crear un archivo `.env` en la raíz:
 ```env
 VITE_ALGOLIA_APP_ID=TU_APP_ID
 VITE_ALGOLIA_SEARCH_KEY=TU_SEARCH_KEY
-VITE_INDEX_NAME=TU_INDEX_NAME
+VITE_INDEX_NAME_PRODUCTS=TU_INDEX_NAME
 ```
 
 > No se deben subir las credenciales reales al repositorio.

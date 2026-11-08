@@ -4,7 +4,10 @@ import { algoliasearch } from "algoliasearch";
 
 const ALGOLIA_APP_ID = process.env.ALGOLIA_APP_ID;
 const ALGOLIA_ADMIN_KEY = process.env.ALGOLIA_ADMIN_KEY;
-const INDEX_NAME = process.env.INDEX_NAME;
+const INDEX_NAME_PRODUCTS = process.env.INDEX_NAME_PRODUCTS;
+const INDEX_NAME_USERS = process.env.INDEX_NAME_USERS;
+const INDEX_NAME_ORDERS = process.env.INDEX_NAME_ORDERS;
+const client = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_ADMIN_KEY);
 
 /**
  * Se encarga de cargar los productos desde un archivo JSON local y mejorar la
@@ -33,10 +36,9 @@ function cargarProductos() {
  * @returns {Promise<void>}
  */
 async function indexarEnAlgolia(productos) {
-  const client = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_ADMIN_KEY);
 
   await client.setSettings({
-    indexName: INDEX_NAME,
+    indexName: INDEX_NAME_PRODUCTS,
     indexSettings: {
       searchableAttributes: [
         "productInfo.title",
@@ -54,15 +56,69 @@ async function indexarEnAlgolia(productos) {
   });
 
   await client.saveObjects({
-    indexName: INDEX_NAME,
+    indexName: INDEX_NAME_PRODUCTS,
     objects: productos
   });
-  console.log(`Indexado en Algolia: ${INDEX_NAME} con ${productos.length} productos`);
+  console.log(`Indexado en Algolia: ${INDEX_NAME_PRODUCTS} con ${productos.length} productos`);
+}
+
+/**
+ * Creación de los indices de los usuarios, los roles de estos son: ADMIN, CUSTOMER y BUSINESS
+ */
+async function crearIndiceUsuarios() {
+  const data = fs.readFileSync("data/users.json", "utf-8");
+  const usuarios = JSON.parse(data);
+
+  await client.setSettings({
+    indexName : INDEX_NAME_USERS,
+    indexSettings: {
+      searchableAttributes: [
+        "correo",
+        "nombre"
+      ]
+    }
+  });
+
+  await client.saveObjects({
+    indexName: INDEX_NAME_USERS,
+    objects: usuarios
+  });
+  console.log(`Indexado en Algolia: ${INDEX_NAME_USERS} con ${usuarios.length} usuarios`)
+}
+
+async function crearIndiceOrdenes() {
+  await client.setSettings({
+    indexName: INDEX_NAME_ORDERS,
+    indexSettings: {
+      searchableAttributes: [
+        "numero",
+        "comprador.nombreCompleto",
+        "comprador.correo"
+      ],
+      attributesForFaceting: [
+        "estadoOrden",
+        "estadoPago",
+        "fecha",
+        "moneda"
+      ]
+    }
+  });
+}
+
+export async function registrarOrden(orden) {
+  const ordenAlgolia = {
+    ...orden,
+    ObjectID: orden.numero
+  };
+
+  await client.saveObject({
+    indexName: INDEX_NAME_ORDERS,
+    body: ordenAlgolia
+  });
 }
 
 async function main() {
-  const productos = cargarProductos();
-  await indexarEnAlgolia(productos);
+  await crearIndiceOrdenes();
 }
 
 main().catch((err) => {

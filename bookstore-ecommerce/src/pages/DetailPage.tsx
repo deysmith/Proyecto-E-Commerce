@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
@@ -9,6 +9,8 @@ import type { ProductRecord } from "../types/productRecord"
 import { translateLanguage } from "../utils/language"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { handleAddToCart } from "../utils/handleAddToCart"
+import { useAnalytics } from "../features/analytics/analyticsContext"
+import { addRecentProduct } from "../utils/recentProducts"
 
 
 /**
@@ -23,6 +25,8 @@ export default function DetailPage() {
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const lastTrackedProduct = useRef<string | null>(null)
+  const { registrarEvento, ownerId } = useAnalytics()
 
   useEffect(() => {
     if (!id) return
@@ -31,10 +35,26 @@ export default function DetailPage() {
     setError(false)
 
     fetchProductById(id)
-      .then((result) => setProduct(result))
+      .then((result) => {
+        if (!result) {
+          setError(true)
+          return
+        }
+        setProduct(result)
+        if (lastTrackedProduct.current !== result.objectID) {
+          lastTrackedProduct.current = result.objectID
+          registrarEvento("product_view", {
+            productId: result.objectID,
+            title: result.productInfo.title,
+            category: result.facets.category,
+          })
+          // Historial de vistos recientemente del usuario o sesión
+          addRecentProduct(ownerId, result)
+        }
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, registrarEvento, ownerId])
 
   return (
     <div className="catalog-shell">

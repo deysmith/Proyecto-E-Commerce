@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom"
-import type { Hit } from "instantsearch.js"
 import type { ProductRecord } from "../../types/productRecord"
 import { formatPrice } from "../../utils/formatPrice"
 import { useTranslation } from "react-i18next"
@@ -10,7 +9,8 @@ import { useCart } from "../carrito-de-compras/useCart"
  * Las propiedades necesarias para el componente ProductCard
  */
 interface ProductCardProps {
-  hit: Hit<ProductRecord>
+  // Puede venir de Algolia (Hits) o del historial local, por eso se usa ProductRecord
+  hit: ProductRecord
 }
 
 /**

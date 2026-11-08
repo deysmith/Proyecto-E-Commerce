@@ -1,7 +1,9 @@
 import type { MouseEvent } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
 import { CartPopUp } from "../features/carrito-de-compras/CartPopUp"
+import { useSession } from "../features/session/sessionContext"
+import { NOMBRE_ROL } from "../features/session/roles"
 
 interface HeaderProps {
   esCheckout?: boolean
@@ -9,6 +11,10 @@ interface HeaderProps {
 }
 
 export function Header( { esCheckout, onSalir }: HeaderProps) {
+  const { user, signOut } = useSession()
+  const navigate = useNavigate()
+  const location = useLocation()
+
   function alHacerClicEnLogo(evento: MouseEvent<HTMLAnchorElement>) {
     if (!onSalir) return
     evento.preventDefault()
@@ -29,6 +35,32 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
         <><SearchBar /> <CartPopUp /></>
         )
       }
+
+      <div className="header-account">
+        <Link to="/analytics" className="header-account__analytics">Analytics</Link>
+        {user ? (
+          <>
+            {/* Usuario y rol de la sesión activa */}
+            <span className="header-account__usuario">
+              <strong>{user.name}</strong>
+              <span>{NOMBRE_ROL[user.role]}</span>
+            </span>
+            <button
+              type="button"
+              className="header-account__action"
+              onClick={() => {
+                signOut()
+                navigate("/login")
+              }}
+            >
+              Salir
+            </button>
+          </>
+        ) : (
+          // Se guarda la página actual para volver a ella después de iniciar sesión
+          <Link to="/login" state={{ from: location.pathname === "/login" ? "/" : location.pathname }} className="header-account__action">Ingresar</Link>
+        )}
+      </div>
     </header>
   )
 }

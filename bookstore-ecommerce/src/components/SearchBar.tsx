@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { SearchBox, useClearRefinements, useSearchBox } from "react-instantsearch";
 import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
-import { addRecentSearch, getRecentSearches } from "../utils/recentSearches";
-import { formatPrice } from "../utils/formatPrice";
+import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";import { formatPrice } from "../utils/formatPrice";
+import { useAnalytics } from "../features/analytics/analyticsContext";
+import { getCategoriaMasComun } from "../features/personalizacion/categoriaFavorita";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -19,6 +20,7 @@ export function SearchBar() {
   const { refine: clearRefinements } = useClearRefinements()
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const { registrarEvento, ownerId } = useAnalytics()
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -52,7 +54,7 @@ export function SearchBar() {
   }, [algoliaQuery])
   
   function openDropdown() {
-    setRecentSearches(getRecentSearches())
+    setRecentSearches(getRecentSearches(ownerId))
     setIsOpen(true)
   }
 
@@ -61,7 +63,10 @@ export function SearchBar() {
     if (!trimmed) return
 
     clearRefinements()
-    addRecentSearch(trimmed)
+    addRecentSearch(ownerId, trimmed)
+    // Categoría más común en las sugerencias de lo que escribió.
+    const categoria = trimmed === query.trim() ? getCategoriaMasComun(suggestions) : null
+    registrarEvento("search", categoria ? { query: trimmed, category: categoria } : { query: trimmed })
     refine(trimmed)
     setQuery(trimmed)
     setIsOpen(false)
@@ -69,8 +74,22 @@ export function SearchBar() {
 
   }
 
+  // Borra el historial de búsquedas del usuario o sesión
+  function clearHistory() {
+    clearRecentSearches(ownerId)
+    setRecentSearches([])
+  }
+
+  // Borra solo una búsqueda (la X de cada fila)
+  function removeSearch(term: string) {
+    removeRecentSearch(ownerId, term)
+    setRecentSearches((actuales) => actuales.filter((item) => item !== term))
+  }
+
   function goToProduct(hit: ProductRecord) {
-    addRecentSearch(query.trim() || hit.productInfo.title)
+    const searchTerm = query.trim()
+    addRecentSearch(ownerId, searchTerm || hit.productInfo.title)
+    if (searchTerm) registrarEvento("search", { query: searchTerm, category: hit.facets.category })
     setIsOpen(false)
     setQuery("")
     navigate(`/producto/${hit.objectID}`)
@@ -106,13 +125,22 @@ export function SearchBar() {
           {showRecent && (
             <div>
 
-              <p className="header-search__section-title">
-                Búsquedas recientes
-              </p>
+              <div className="header-search__recent-header">
+                <p className="header-search__section-title">
+                  Búsquedas recientes
+                </p>
+                <button
+                  type="button"
+                  className="header-search__clear"
+                  onClick={clearHistory}
+                >
+                  Limpiar
+                </button>
+              </div>
 
               <ul className="header-search__recent-list">
                 {recentSearches.map((term) => (
-                  <li key={term}>
+                  <li key={term} className="header-search__recent-item">
 
                     <button
                       type="button"
@@ -124,6 +152,16 @@ export function SearchBar() {
                       </span>
 
                       {term}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="header-search__remove"
+                      onClick={() => removeSearch(term)}
+                      aria-label={`Eliminar "${term}" de las búsquedas recientes`}
+                      title="Eliminar"
+                    >
+                      ×
                     </button>
                   </li>
                 ))}

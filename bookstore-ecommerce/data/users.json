@@ -1,0 +1,13 @@
+[
+    { "correo": "admin1@booksmart.cr", "clave": "qwerty1234567", "nombre": "Administrador 1", "rol": "ADMIN" },
+    { "correo": "admin2@booksmart.cr", "clave": "ytrewq7654321", "nombre": "Administrador 2", "rol": "ADMIN" },
+    { "correo": "dia@gmail.com", "clave": "qwerty1234567", "nombre": "Día Hernández", "rol": "CUSTOMER" },
+    { "correo": "anacastro@gmail.com", "clave": "qwerty123456", "nombre": "Ana Castro", "rol": "CUSTOMER" },
+    { "correo": "marior@yahoo.com", "clave": "qwerty1234567", "nombre": "Marío Rojas", "rol": "CUSTOMER" },
+    { "correo": "trinidadsolano@gmail.com", "clave": "qwerty1234567", "nombre": "Trinidad Solano", "rol": "CUSTOMER" },
+    { "correo": "augustaramos@gmail.com", "clave": "qwerty1234567", "nombre": "Ausgusta Ramos", "rol": "CUSTOMER" },
+    { "correo": "supermercadoszam@gmail.com", "clave": "qwerty1234567", "nombre": "Supermercados Zam", "rol": "BUSINESS" },
+    { "correo": "papeleriaesperanza@yahoo.com", "clave": "ytrewq7654321", "nombre": "Papelería Esperanza", "rol": "BUSINESS" },
+    { "correo": "libreriapapelylapicero@gmail.com", "clave": "qwerty1234567", "nombre": "Librería Papel y Lapicero", "rol": "BUSINESS" },
+    { "correo": "sutiendaonline@gmai.com", "clave": "qwerty1234567", "nombre": "Su Tienda Online", "rol": "BUSINESS" }
+]

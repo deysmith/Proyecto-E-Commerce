@@ -7,8 +7,12 @@ import CartPage from "./pages/CartPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import ConfirmationPage from "./pages/ConfirmationPage"
 import LegalPage from "./pages/LegalPage"
+import LoginPage from "./pages/LoginPage"
+import AnalyticsPage from "./pages/AnalyticsPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 import { ErrorBoundary } from "./components/ErrorBoundary"
+import { SessionProvider } from "./features/session/SessionProvider"
+import { AnalyticsProvider } from "./features/analytics/AnalyticsProvider"
 
 // Pantalla para direcciones que no existen
 function NoEncontrada() {
@@ -26,29 +30,35 @@ function NoEncontrada() {
 }
 
 export default function App() {
-  return (
+    return (
     <ErrorBoundary>
       <HashRouter>
-        <CartProvider>
-          <InstantSearch
-            searchClient={searchClient}
-            indexName={import.meta.env.VITE_INDEX_NAME}
-          >
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/producto/:id" element={<DetailPage />} />
-              <Route path="/cart" element={<CartPage />}/>
-              <Route path="/checkout" element={<CheckoutPage />}/>
-              <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
-              <Route path="/terminos-y-condiciones" element={<LegalPage page="terminos" />} />
-              <Route path="/politica-de-devoluciones" element={<LegalPage page="devoluciones" />} />
-              <Route path="/politica-de-envios" element={<LegalPage page="envios" />} />
-              <Route path="/politica-de-privacidad" element={<LegalPage page="privacidad" />} />
-              <Route path="/preguntas-frecuentes" element={<LegalPage page="preguntas" />} />
-              <Route path="*" element={<NoEncontrada />} />
-            </Routes>
-          </InstantSearch>
-        </CartProvider>
+        <SessionProvider>
+          <AnalyticsProvider>
+            <CartProvider>
+              <InstantSearch
+                searchClient={searchClient}
+                indexName={import.meta.env.VITE_INDEX_NAME_PRODUCTS}
+              >
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/producto/:id" element={<DetailPage />} />
+                  <Route path="/cart" element={<CartPage />}/>
+                  <Route path="/checkout" element={<CheckoutPage />}/>
+                  <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
+                  <Route path="/terminos-y-condiciones" element={<LegalPage page="terminos" />} />
+                  <Route path="/politica-de-devoluciones" element={<LegalPage page="devoluciones" />} />
+                  <Route path="/politica-de-envios" element={<LegalPage page="envios" />} />
+                  <Route path="/politica-de-privacidad" element={<LegalPage page="privacidad" />} />
+                  <Route path="/preguntas-frecuentes" element={<LegalPage page="preguntas" />} />
+                  <Route path="*" element={<NoEncontrada />} />
+                </Routes>
+              </InstantSearch>
+            </CartProvider>
+          </AnalyticsProvider>
+        </SessionProvider>
       </HashRouter>
     </ErrorBoundary>
   )
