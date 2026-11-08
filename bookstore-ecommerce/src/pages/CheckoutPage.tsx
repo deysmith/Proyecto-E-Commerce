@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
@@ -17,6 +17,7 @@ import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
+import { useAnalytics } from "../features/analytics/analyticsContext"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -42,6 +43,17 @@ export default function CheckoutPage() {
   const [terminosAceptados, setTerminosAceptados] = useState(false)
   // true cuando intentó confirmar sin aceptar los términos
   const [errorTerminos, setErrorTerminos] = useState(false)
+  const checkoutTracked = useRef(false)
+  const { registrarEvento } = useAnalytics()
+
+  useEffect(() => {
+    if (items.length === 0 || checkoutTracked.current) return
+    checkoutTracked.current = true
+    registrarEvento("checkout_start", {
+      productCount: items.length,
+      quantity: items.reduce((total, item) => total + item.quantity, 0),
+    })
+  }, [items, registrarEvento])
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -121,6 +133,11 @@ export default function CheckoutPage() {
    * Pago aprobado: la orden ya está confirmada y guardada. Se pasa a la pantalla de confirmación y se vacía el carrito.
    */
   function terminarCompra(ordenConfirmada: Orden) {
+    registrarEvento("purchase_completed", {
+      orderNumber: ordenConfirmada.numero,
+      productCount: ordenConfirmada.productos.length,
+      total: ordenConfirmada.montos.total,
+    })
     // Se guarda la orden confirmada en la página para que el carrito vacío no active el bloqueo de abajo mientras se cambia de pantalla
     setOrden(ordenConfirmada)
     // replace: true para que el botón "atrás" no regrese a un checkout ya pagado

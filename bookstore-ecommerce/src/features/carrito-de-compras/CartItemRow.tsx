@@ -92,7 +92,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
           <button
             type="button"
-            onClick={() => increaseQuantity(item.id)}
+            onClick={() => increaseQuantity(item)}
             aria-label="Aumentar cantidad"
           >
             <PlusIcon />

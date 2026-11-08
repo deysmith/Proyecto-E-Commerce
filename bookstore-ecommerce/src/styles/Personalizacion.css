@@ -1,0 +1,13 @@
+.personal-section { width: 100%; max-width: 1320px; margin: 0 auto; padding: 28px 5vw 8px; }
+.personal-section .eyebrow { margin-bottom: 8px; }
+.personal-section__title { margin: 0 0 18px; color: var(--color-primary); font-family: Fraunces, Georgia, serif; font-size: 28px; font-weight: 500; }
+.personal-section__list { display: grid; grid-auto-flow: column; grid-auto-columns: 200px; gap: 18px; margin: 0; padding: 0 0 16px; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; }
+.personal-section__list li { scroll-snap-align: start; }
+.personal-section__list .product-card__cover { height: 230px; }
+.personal-section__list .product-card h3 { font-size: 16px; }
+
+@media (max-width: 785px) {
+  .personal-section__list { grid-auto-columns: 160px; gap: 12px; }
+  .personal-section__list .product-card__cover { height: 200px; }
+  .personal-section__title { font-size: 24px; }
+}
