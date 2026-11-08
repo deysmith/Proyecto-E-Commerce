@@ -4,6 +4,9 @@
  * Se pueden consultar los eventos de un usuario o sesión con getAnalyticsEvents(userId).
  * Cuando un invitado inicia sesión, los eventos que hizo en esta sesión pasan a ser de su usuario con moveSessionEventsToUser(email).
  */
+
+import { esRolValido, type RolUsuario } from "../session/roles"
+
 export type AnalyticsEventType =
   | "login"
   | "search"
@@ -26,6 +29,7 @@ export interface AnalyticsEvent {
 export interface LocalUser {
   email: string
   name: string
+  role: RolUsuario
   loginAt: string
 }
 
@@ -50,18 +54,20 @@ export function getActiveUser(): LocalUser | null {
       typeof user.email !== "string" ||
       !("name" in user) ||
       typeof user.name !== "string" ||
+      !("role" in user) ||
+      !esRolValido(user.role) ||
       !("loginAt" in user) ||
       typeof user.loginAt !== "string"
     ) return null
 
-    return { email: user.email, name: user.name, loginAt: user.loginAt }
+    return { email: user.email, name: user.name, role: user.role, loginAt: user.loginAt }
   } catch {
     return null
   }
 }
 
-export function startLocalSession(email: string, name: string): LocalUser {
-  const user = { email: email.trim().toLowerCase(), name: name.trim(), loginAt: new Date().toISOString() }
+export function startLocalSession(email: string, name: string, role: RolUsuario): LocalUser {
+  const user = { email: email.trim().toLowerCase(), name: name.trim(), role, loginAt: new Date().toISOString() }
   try {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
   } catch {

@@ -1,9 +1,10 @@
 import { createContext, useContext } from "react"
 import type { LocalUser } from "../analytics/analytics"
+import type { UsuarioValidado } from "./authService"
 
 interface SessionContextValue {
   user: LocalUser | null
-  signIn: (email: string, name: string) => void
+  signIn: (usuario: UsuarioValidado) => void
   signOut: () => void
 }
 

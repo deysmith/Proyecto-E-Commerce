@@ -8,14 +8,15 @@ import {
   startLocalSession,
 } from "../analytics/analytics"
 import { SessionContext } from "./sessionContext"
+import type { UsuarioValidado } from "./authService"
 import { moveRecentSearches } from "../../utils/recentSearches"
 import { moveRecentProducts } from "../../utils/recentProducts"
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState(getActiveUser)
 
-  function signIn(email: string, name: string) {
-    const activeUser = startLocalSession(email, name)
+  function signIn(usuario: UsuarioValidado) {
+    const activeUser = startLocalSession(usuario.correo, usuario.nombre, usuario.rol)
     // Lo que hizo como invitado en esta sesión pasa a su usuario
     moveSessionEventsToUser(activeUser.email)
     moveRecentSearches(getSessionId(), activeUser.email)
@@ -24,6 +25,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     recordAnalyticsEvent("login", {
       email: activeUser.email,
       name: activeUser.name,
+      role: activeUser.role,
       sessionId: getSessionId(),
     })
   }
