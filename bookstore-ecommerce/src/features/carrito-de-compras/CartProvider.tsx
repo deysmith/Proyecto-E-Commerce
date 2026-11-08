@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useState, type ReactNode } from "react"
 import type { ProductRecord } from "../../types/productRecord"
 import { CartContext } from "./CartContext"
-import { cartReducer } from "./CartReducer"
+import { cartReducer, type CartItem } from "./CartReducer"
 import { getCartTotals } from "./CartCalculations"
 import { CARRITO_INVITADO, loadCart, saveCart } from "./CartStorage"
 import { CartNotification } from "./CartNotification"
@@ -53,8 +53,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setNotification(`"${product.productInfo.title}" se agregó al carrito`)
   }
 
-  function increaseQuantity(id: string) {
-    dispatch({ type: "INCREASE", id })
+  function increaseQuantity(item: CartItem) {
+    dispatch({ type: "INCREASE", id: item.id })
+    registrarEvento("add_to_cart", {
+      productId: item.id,
+      title: item.title,
+      quantity: 1,
+    })
   }
 
   function decreaseQuantity(id: string) {

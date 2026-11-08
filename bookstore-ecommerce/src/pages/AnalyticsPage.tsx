@@ -5,6 +5,7 @@ import type { AnalyticsEvent, AnalyticsEventType } from "../features/analytics/a
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { useSession } from "../features/session/sessionContext"
 import { formatPrice } from "../utils/formatPrice"
+import { useEffect, useState } from "react"
 
 const EVENT_LABELS: Record<AnalyticsEventType, string> = {
   login: "Inicio de sesión",
@@ -49,13 +50,30 @@ export default function AnalyticsPage() {
   // Eventos del usuario o de la sesión de invitado
   const { events } = useAnalytics()
 
+  const [paginaActual, setPaginaActual] = useState(1)
+  const eventosPorPagina = 10
+
+  const eventosOrdenados = [...events].reverse()
+  const totalPaginas = Math.ceil(eventosOrdenados.length / eventosPorPagina)
+
+  useEffect(() => {
+    if (totalPaginas === 0) {
+      setPaginaActual(1)
+    } else if (paginaActual > totalPaginas) {
+      setPaginaActual(totalPaginas)
+    }
+  }, [paginaActual, totalPaginas])
+
+  const indiceFinal = paginaActual * eventosPorPagina
+  const indiceInicial = indiceFinal - eventosPorPagina
+  const eventosPaginados = eventosOrdenados.slice(indiceInicial, indiceFinal)
+
   const metrics = [
     { type: "product_view", label: "Productos visualizados" },
     { type: "search", label: "Búsquedas realizadas" },
     { type: "add_to_cart", label: "Productos agregados al carrito" },
     { type: "purchase_completed", label: "Compras realizadas" },
   ] as const
-  const latestEvents = [...events].reverse().slice(0, 12)
 
   // Para los productos agregados al carrito se suman las cantidades, en las demás se cuentan los eventos
   function calcularMetrica(type: AnalyticsEventType) {
@@ -65,6 +83,30 @@ export default function AnalyticsPage() {
       (total, event) => total + (typeof event.details.quantity === "number" ? event.details.quantity : 1),
       0,
     )
+  }
+
+  function cambiarPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= totalPaginas) {
+      setPaginaActual(pagina)
+    }
+  }
+
+  function obtenerPaginas() {
+    const paginas: (number | string)[] = []
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      if (
+        i === 1 ||
+        i === totalPaginas ||
+        (i >= paginaActual - 1 && i <= paginaActual + 1)
+      ) {
+        paginas.push(i)
+      } else if (paginas[paginas.length - 1] !== "...") {
+        paginas.push("...")
+      }
+    }
+
+    return paginas
   }
 
   return (
@@ -100,28 +142,79 @@ export default function AnalyticsPage() {
             <span>{events.length} eventos</span>
           </div>
 
-          {latestEvents.length === 0 ? (
+          {events.length === 0 ? (
             <div className="analytics-activity__empty">
               <p>Aún no hay actividad registrada. Explora el catálogo, busca un libro o agrega algo al carrito y aquí verás tus métricas.</p>
               <Link to="/" className="session-form__submit">Ir al catálogo</Link>
             </div>
           ) : (
-            <div className="analytics-table-wrap">
-              <table className="analytics-table">
-                <thead>
-                  <tr><th>Evento</th><th>Detalle</th><th>Fecha y hora</th></tr>
-                </thead>
-                <tbody>
-                  {latestEvents.map((event) => (
-                    <tr key={event.id}>
-                      <td>{EVENT_LABELS[event.type]}</td>
-                      <td>{getEventDescription(event)}</td>
-                      <td>{formatTimestamp(event.timestamp)}</td>
+            <>
+              <div className="analytics-table-wrap">
+                <table className="analytics-table">
+                  <thead>
+                    <tr>
+                      <th>Evento</th>
+                      <th>Detalle</th>
+                      <th>Fecha y hora</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody>
+                    {eventosPaginados.map((event) => (
+                      <tr key={event.id}>
+                        <td>{EVENT_LABELS[event.type]}</td>
+                        <td>{getEventDescription(event)}</td>
+                        <td>{formatTimestamp(event.timestamp)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {totalPaginas > 1 && (
+                <div className="filter-pagination">
+                  <button
+                    onClick={() => cambiarPagina(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                    aria-label="Página anterior"
+                  >
+                    ‹
+                  </button>
+
+                  {obtenerPaginas().map((pagina, index) =>
+                    pagina === "..." ? (
+                      <span
+                        key={`ellipsis-${index}`}
+                        className="filter-pagination__ellipsis"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={pagina}
+                        className={
+                          paginaActual === pagina ? "active" : ""
+                        }
+                        onClick={() => cambiarPagina(Number(pagina))}
+                        aria-current={
+                          paginaActual === pagina ? "page" : undefined
+                        }
+                      >
+                        {pagina}
+                      </button>
+                    ),
+                  )}
+
+                  <button
+                    onClick={() => cambiarPagina(paginaActual + 1)}
+                    disabled={paginaActual === totalPaginas}
+                    aria-label="Página siguiente"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>
