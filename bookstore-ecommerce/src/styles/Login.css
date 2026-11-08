@@ -29,6 +29,8 @@
 .login-campo__ver:hover { background: var(--color-bg); }
 .login-campo__ver:focus-visible { outline: 2px solid var(--color-accent); }
 
+.login-aviso { margin: -10px 0 24px; padding: 12px 14px; border-left: 3px solid var(--color-accent); border-radius: 4px; background: rgba(228, 152, 30, 0.12); color: var(--color-primary); font-size: 13px; line-height: 1.45; }
+
 .login-alerta { margin: 0; padding: 12px 14px; border-left: 3px solid #a3312c; border-radius: 4px; background: rgba(163, 49, 44, 0.08); color: #7d2420; font-size: 13px; line-height: 1.45; }
 
 .login-enviar { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; margin-top: 6px; border: 0; border-radius: 6px; background: var(--color-primary); color: var(--color-on-primary); font-size: 14px; font-weight: 700; }

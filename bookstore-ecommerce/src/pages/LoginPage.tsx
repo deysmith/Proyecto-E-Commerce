@@ -4,6 +4,7 @@ import { Footer } from "../components/Footer"
 import { Header } from "../components/Header"
 import { useSession } from "../features/session/sessionContext"
 import { validarCredenciales } from "../features/session/authService"
+import { useCart } from "../features/carrito-de-compras/useCart"
 
 // Alturas y colores de los lomos del estante decorativo
 const LOMOS = [
@@ -24,7 +25,8 @@ const LOMOS = [
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function LoginPage() {
-  const { signIn } = useSession()
+  const { user, signIn } = useSession()
+  const { totals } = useCart()
   const location = useLocation()
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
@@ -36,6 +38,8 @@ export default function LoginPage() {
   const [errorGeneral, setErrorGeneral] = useState("")
   // Mientras se consulta a Algolia se bloquea el botón para no enviar dos veces
   const [validando, setValidando] = useState(false)
+  // Libros que el invitado tiene en el carrito y que se pierden al iniciar sesión
+  const librosInvitado = user ? 0 : totals.totalUnidades
   // Página a la que vuelve después de iniciar sesión
   const destination = (location.state as { from?: string } | null)?.from ?? "/"
 
@@ -86,6 +90,13 @@ export default function LoginPage() {
           <div className="login-formulario">
             <h1 id="login-title">Inicia sesión</h1>
             <p className="login-formulario__intro">Usa el correo y la contraseña de tu cuenta Booksmart.</p>
+
+            {librosInvitado > 0 && (
+              <p className="login-aviso" role="note">
+                Tienes {librosInvitado} {librosInvitado === 1 ? "libro" : "libros"} en el carrito. Al iniciar sesión
+                se cargará el carrito de tu cuenta y {librosInvitado === 1 ? "ese libro se eliminará" : "esos libros se eliminarán"}.
+              </p>
+            )}
 
             <form onSubmit={submit} noValidate aria-labelledby="login-title">
               {errorGeneral && (
