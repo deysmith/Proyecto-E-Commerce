@@ -38,6 +38,10 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
 
       <div className="header-account">
         <Link to="/analytics" className="header-account__analytics">Analytics</Link>
+        {/* Los clientes (con sesión o invitados) consultan sus órdenes; el administrador no tiene órdenes propias */}
+        {user?.role !== "ADMIN" && (
+          <Link to="/mis-ordenes" className="header-account__analytics">Mis órdenes</Link>
+        )}
         {user ? (
           <>
             {/* Usuario y rol de la sesión activa */}
