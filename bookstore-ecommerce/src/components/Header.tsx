@@ -31,10 +31,14 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
 
       {esCheckout ? (
         <></>
-        ) : (
-        <><SearchBar /> <CartPopUp /></>
-        )
-      }
+      ) : user?.role !== "ADMIN" ? (
+        <>
+          <SearchBar />
+          <CartPopUp />
+        </>
+      ) : (
+        <SearchBar />
+      )}
 
       <div className="header-account">
         <Link to="/analytics" className="header-account__analytics">Analytics</Link>

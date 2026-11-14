@@ -6,6 +6,8 @@ import { fetchSearchSuggestions } from "../services/algoliaService";
 import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";import { formatPrice } from "../utils/formatPrice";
 import { useAnalytics } from "../features/analytics/analyticsContext";
 import { getCategoriaMasComun } from "../features/personalizacion/categoriaFavorita";
+import { getPrecioLibro } from "../utils/segmentarUsuarios";
+import { useSession } from "../features/session/sessionContext";
 
 /**
  * Buscador global del Header: muestra sugerencias con portada mientras
@@ -13,6 +15,7 @@ import { getCategoriaMasComun } from "../features/personalizacion/categoriaFavor
  */
 export function SearchBar() {
   const navigate = useNavigate()
+  const { user } = useSession()
   const { query: algoliaQuery, refine } = useSearchBox()
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<ProductRecord[]>([])
@@ -197,7 +200,7 @@ export function SearchBar() {
                     </span>
 
                     <span className="header-search__suggestion-price">
-                      {formatPrice(hit.pricing.price_crc)}
+                      {formatPrice(getPrecioLibro(hit, user?.role))}
                     </span>
                   </button>
                 </li>

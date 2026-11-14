@@ -112,10 +112,16 @@ export default function AnalyticsPage() {
   return (
     <div className="catalog-shell">
       <Header />
-      <main className="analytics-page">
+      <main className="cart-page">
+        <span>
+          <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
+              <Link to="/">Catálogo</Link>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page">Analytics</span>
+            </nav>
+        </span>
         <div className="analytics-heading">
           <div>
-            <p className="eyebrow">Booksmart · Analytics</p>
             <h1>Tu actividad</h1>
           </div>
           <p className="analytics-heading__user">

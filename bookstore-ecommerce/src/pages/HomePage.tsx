@@ -6,12 +6,14 @@ import { CatalogFilters } from "../features/catalog/CatalogFilters"
 import { CatalogResults } from "../features/catalog/CatalogResults"
 import { RecentlyViewed } from "../features/personalizacion/RecentlyViewed"
 import { Recommendations } from "../features/personalizacion/Recommendations"
+import { useSession } from "../features/session/sessionContext"
 
 /**
  * Componente que representa a la página principal de la página web
  */
 export default function HomePage() {
   const { query } = useSearchBox()
+  const { user } = useSession()
   const estaBuscando = query.trim() !== ""
 
   return (
@@ -25,7 +27,7 @@ export default function HomePage() {
       />
       <main>
         <CatalogIntro />
-        {!estaBuscando && (
+        {!estaBuscando && user?.role !== "ADMIN" &&(
           <>
             <RecentlyViewed />
             <Recommendations />
