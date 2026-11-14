@@ -96,24 +96,16 @@ async function crearIndiceOrdenes() {
         "comprador.correo"
       ],
       attributesForFaceting: [
+        //clienteId (correo o id de invitado) permite traer solo las órdenes de una persona.
+        //filterOnly: sirve para filtrar pero no se muestra como faceta
+        "filterOnly(clienteId)",
+        "tipoCliente",
         "estadoOrden",
         "estadoPago",
         "fecha",
         "moneda"
       ]
     }
-  });
-}
-
-export async function registrarOrden(orden) {
-  const ordenAlgolia = {
-    ...orden,
-    ObjectID: orden.numero
-  };
-
-  await client.saveObject({
-    indexName: INDEX_NAME_ORDERS,
-    body: ordenAlgolia
   });
 }
 

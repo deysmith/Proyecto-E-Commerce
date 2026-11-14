@@ -3,6 +3,7 @@ import { getItemSubtotal, type CartTotals } from "../carrito-de-compras/CartCalc
 import type { DatosComprador, DatosEntrega } from "../checkout/CheckoutTypes"
 import { nombreCanton, nombreDistrito, nombreProvincia } from "../checkout/CheckoutLocations"
 import { VERSION_LEGAL } from "../legal/InfoTienda"
+import type { TipoCliente } from "./OrderCustomer"
 import type { EntregaOrden, Orden, ProductoOrden } from "./OrderTypes"
 
 /**
@@ -71,6 +72,10 @@ export function productoParaOrden(item: CartItem): ProductoOrden {
 
 interface DatosParaOrden {
   numero: string
+  usuarioId?: string
+  // Identificador del cliente (correo o id de invitado) y su tipo
+  clienteId: string
+  tipoCliente: TipoCliente
   items: CartItem[]
   // Los totales que ya calculó el carrito
   totales: CartTotals
@@ -84,11 +89,14 @@ interface DatosParaOrden {
  * Arma la orden. Siempre nace con estado "pendiente" y pago "pendiente": todavía no se ha intentado cobrar nada.
  * La aceptación de los términos se registra aquí, con su fecha y la versión de los documentos que se aceptaron.
  */
-export function construirOrden({ numero, items, totales, comprador, entrega, terminosAceptados }: DatosParaOrden): Orden {
+export function construirOrden({ numero, usuarioId, clienteId, tipoCliente, items, totales, comprador, entrega, terminosAceptados }: DatosParaOrden): Orden {
   const ahora = new Date().toISOString()
 
   return {
     numero,
+    usuarioId,
+    clienteId,
+    tipoCliente,
     fecha: ahora,
     comprador: {
       nombreCompleto: comprador.nombreCompleto.trim(),

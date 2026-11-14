@@ -6,6 +6,11 @@ import type { EstadoOrden, EstadoPago, Orden } from "./OrderTypes"
 
 export const ORDERS_STORAGE_KEY = "booksmart_orders"
 
+/**
+ * Guarda las órdenes nuevas que todavía no se han sincronizado con Algolia.
+ */
+export const ORDERS_PENDING_ALGOLIA_KEY = "booksmart_orders_pendientes_algolia"
+
 const ESTADOS_ORDEN: EstadoOrden[] = ["pendiente", "confirmada", "fallida"]
 const ESTADOS_PAGO: EstadoPago[] = ["pendiente", "aprobado", "rechazado", "error"]
 
@@ -17,7 +22,7 @@ function esObjeto(valor: unknown): valor is Record<string, unknown> {
  * Revisa que un objeto leído de localStorage tenga la forma de una Orden.
  * Así si hay datos viejos o dañados no se cae la aplicación.
  */
-function esOrdenValida(dato: unknown): dato is Orden {
+export function esOrdenValida(dato: unknown): dato is Orden {
   if (!esObjeto(dato)) return false
 
   return (
@@ -51,21 +56,119 @@ export function cargarOrdenes(): Orden[] {
 }
 
 /**
- * Guarda una orden. Si ya existe una con el mismo número la reemplaza (así no se duplica); si no, la agrega al final.
- * Devuelve true si se pudo guardar y false si falló (por ejemplo, si el navegador bloquea localStorage), para que la pantalla avise al usuario en vez de seguir como si nada.
+ * Devuelve las órdenes nuevas que todavía están pendientes
+ * de sincronización con Algolia.
+ */
+export function cargarOrdenesPendientesAlgolia(): Orden[] {
+  try {
+    const guardado = localStorage.getItem(ORDERS_PENDING_ALGOLIA_KEY)
+    if (!guardado) return []
+
+    const datos = JSON.parse(guardado)
+    if (!Array.isArray(datos)) return []
+
+    return datos.filter(esOrdenValida)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Guarda una orden en localStorage.
+ *
+ * Toda orden guardada (nueva o actualizada) queda en la cola de sincronización
+ * hasta que Algolia confirme que recibió esa versión. Así, si el envío falla
+ * (sin internet, por ejemplo), el cambio se reintenta después y Algolia no se
+ * queda con un estado viejo de la orden.
  */
 export function guardarOrden(orden: Orden): boolean {
   try {
     const ordenes = cargarOrdenes()
-    const posicion = ordenes.findIndex((existente) => existente.numero === orden.numero)
+    const pendientes = cargarOrdenesPendientesAlgolia()
 
-    if (posicion >= 0) {
-      ordenes[posicion] = orden
-    } else {
+    const posicion = ordenes.findIndex(
+      (existente) => existente.numero === orden.numero
+    )
+
+    const esNueva = posicion < 0
+
+    if (esNueva) {
       ordenes.push(orden)
+    } else {
+      ordenes[posicion] = orden
     }
 
+    // Siempre queda en la cola: se reemplaza su versión si ya estaba.
+    const posicionPendiente = pendientes.findIndex(
+      (existente) => existente.numero === orden.numero
+    )
+
+    if (posicionPendiente >= 0) {
+      pendientes[posicionPendiente] = orden
+    } else {
+      pendientes.push(orden)
+    }
+
+    const ordenesAnteriores = localStorage.getItem(ORDERS_STORAGE_KEY)
+    const pendientesAnteriores = localStorage.getItem(
+      ORDERS_PENDING_ALGOLIA_KEY
+    )
+
     localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(ordenes))
+
+    try {
+      localStorage.setItem(
+        ORDERS_PENDING_ALGOLIA_KEY,
+        JSON.stringify(pendientes)
+      )
+    } catch {
+      // Si falla la cola, se intenta restaurar el almacenamiento anterior.
+      if (ordenesAnteriores === null) {
+        localStorage.removeItem(ORDERS_STORAGE_KEY)
+      } else {
+        localStorage.setItem(ORDERS_STORAGE_KEY, ordenesAnteriores)
+      }
+
+      if (pendientesAnteriores === null) {
+        localStorage.removeItem(ORDERS_PENDING_ALGOLIA_KEY)
+      } else {
+        localStorage.setItem(
+          ORDERS_PENDING_ALGOLIA_KEY,
+          pendientesAnteriores
+        )
+      }
+
+      return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Marca como sincronizadas las órdenes indicadas.
+ *
+ * Se debe llamar únicamente después de que Algolia confirme que
+ * recibió correctamente las órdenes (lo hace ordersService, o el script
+ * de Node si se usa el registro manual).
+ *
+ * No elimina las órdenes originales de localStorage.
+ */
+export function marcarOrdenesSincronizadas(numeros: string[]): boolean {
+  try {
+    const numerosSincronizados = new Set(numeros)
+
+    const pendientes = cargarOrdenesPendientesAlgolia().filter(
+      (orden) => !numerosSincronizados.has(orden.numero)
+    )
+
+    localStorage.setItem(
+      ORDERS_PENDING_ALGOLIA_KEY,
+      JSON.stringify(pendientes)
+    )
+
     return true
   } catch {
     return false

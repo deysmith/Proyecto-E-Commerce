@@ -8,6 +8,7 @@ import type { Orden } from "../ordenes/OrderTypes"
 import { procesarPagoSandbox } from "../pagos/PaymentSandbox"
 import { PaymentGatewayForm } from "../pagos/PaymentGatewayForm"
 import type { DatosTarjeta, RespuestaPago } from "../pagos/PaymentTypes"
+import { sincronizarOrden } from "../../services/ordersService"
 
 interface CheckoutPaymentProps {
   orden: Orden
@@ -74,6 +75,8 @@ export function CheckoutPayment({ orden, onOrdenActualizada, onPagoAprobado, onV
     // La orden cambia según el resultado y se guarda
     const ordenActualizada = aplicarResultadoPago(orden, respuesta)
     guardarOrden(ordenActualizada)
+    // El estado de la orden y del pago cambió: se actualiza también en Algolia
+    void sincronizarOrden(ordenActualizada)
 
     enviandoPago.current = false
     setProcesando(false)

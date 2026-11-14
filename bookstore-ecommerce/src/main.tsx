@@ -8,6 +8,7 @@ import './styles/Checkout.css'
 import './styles/Legal.css'
 import './styles/Personalizacion.css'
 import './styles/Login.css'
+import './styles/Orders.css'
 import './i18n/config.ts'
 import App from './App.tsx'
 

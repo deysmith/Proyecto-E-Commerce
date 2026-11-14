@@ -13,11 +13,14 @@ import { CheckoutPayment } from "../features/checkout/CheckoutPayment"
 import { primerPasoConErrores } from "../features/checkout/CheckoutValidations"
 import { construirOrden, generarNumeroOrden } from "../features/ordenes/OrderBuilder"
 import { cargarOrdenes, guardarOrden } from "../features/ordenes/OrderStorage"
+import { identidadDeCliente } from "../features/ordenes/OrderCustomer"
+import { sincronizarOrden } from "../services/ordersService"
 import type { Orden } from "../features/ordenes/OrderTypes"
 import { compradorVacio, entregaVacia, type DatosComprador, type DatosEntrega } from "../features/checkout/CheckoutTypes"
 import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
 import { useAnalytics } from "../features/analytics/analyticsContext"
+import { useSession } from "../features/session/sessionContext"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -27,6 +30,7 @@ const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
  */
 export default function CheckoutPage() {
   const { items, totals, clearCart } = useCart()
+  const { user } = useSession()
   const navigate = useNavigate()
   const [paso, setPaso] = useState(0)
   const [comprador, setComprador] = useState<DatosComprador>(compradorVacio)
@@ -98,13 +102,18 @@ export default function CheckoutPage() {
       : generarNumeroOrden(cargarOrdenes().map((guardada) => guardada.numero))
 
     // Si es la misma orden pendiente, se conservan sus intentos de pago para que volver al resumen no los reinicie.
-    const nuevaOrden = construirOrden({ numero, items, totales: totals, comprador, entrega, terminosAceptados })
+    // Con sesión la orden queda a nombre del correo del usuario; sin sesión, a nombre del id de invitado guardado en este navegador
+    const { clienteId, tipoCliente } = identidadDeCliente(user)
+    const nuevaOrden = construirOrden({ numero, usuarioId: user?.email, clienteId, tipoCliente, items, totales: totals, comprador, entrega, terminosAceptados })
     if (orden && orden.estadoOrden === "pendiente") nuevaOrden.intentosPago = orden.intentosPago ?? 0
 
     if (!guardarOrden(nuevaOrden)) {
       setErrorGuardado("No pudimos guardar tu orden. Revisa que tu navegador permita guardar datos e inténtalo de nuevo.")
       return
     }
+
+    // Se registra en el índice de órdenes de Algolia. Si falla, queda en la cola y se reintenta más tarde
+    void sincronizarOrden(nuevaOrden)
 
     setErrorGuardado(null)
     setOrden(nuevaOrden)
