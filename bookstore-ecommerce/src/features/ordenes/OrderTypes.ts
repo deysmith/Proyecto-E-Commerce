@@ -1,4 +1,5 @@
 import type { DatosComprador } from "../checkout/CheckoutTypes"
+import type { TipoCliente } from "./OrderCustomer"
 
 export type EstadoOrden = "pendiente" | "confirmada" | "fallida"
 export type EstadoPago = "pendiente" | "aprobado" | "rechazado" | "error"
@@ -57,6 +58,11 @@ export interface MontosOrden {
 export interface Orden {
   // Número único que ve el usuario
   numero: string
+  usuarioId?: string
+  // A quién pertenece la orden: el correo del usuario con sesión o el id de invitado (guest-...).
+  // Es el campo por el que se filtran las órdenes de una persona. Opcional porque las órdenes antiguas no lo tienen.
+  clienteId?: string
+  tipoCliente?: TipoCliente
   // Fecha y hora de creación en formato ISO (ej. 2026-10-11T23:50:00.000Z)
   fecha: string
   comprador: DatosComprador

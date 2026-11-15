@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { HashRouter, Routes, Route, Link } from "react-router-dom"
 import { InstantSearch } from "react-instantsearch"
 import { searchClient } from "./services/algoliaService"
@@ -8,6 +9,8 @@ import CheckoutPage from "./pages/CheckoutPage"
 import ConfirmationPage from "./pages/ConfirmationPage"
 import LegalPage from "./pages/LegalPage"
 import LoginPage from "./pages/LoginPage"
+import OrdersPage from "./pages/OrdersPage"
+import { sincronizarPendientes } from "./services/ordersService"
 import AnalyticsPage from "./pages/AnalyticsPage"
 import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 import { ErrorBoundary } from "./components/ErrorBoundary"
@@ -30,6 +33,14 @@ function NoEncontrada() {
 }
 
 export default function App() {
+  // Al abrir la app, y cada vez que vuelve la conexión, se reenvían a Algolia las órdenes que quedaron pendientes
+  useEffect(() => {
+    const reintentar = () => { void sincronizarPendientes() }
+    reintentar()
+    window.addEventListener("online", reintentar)
+    return () => window.removeEventListener("online", reintentar)
+  }, [])
+
     return (
     <ErrorBoundary>
       <HashRouter>
@@ -48,6 +59,7 @@ export default function App() {
                   <Route path="/cart" element={<CartPage />}/>
                   <Route path="/checkout" element={<CheckoutPage />}/>
                   <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
+                  <Route path="/mis-ordenes" element={<OrdersPage />} />
                   <Route path="/terminos-y-condiciones" element={<LegalPage page="terminos" />} />
                   <Route path="/politica-de-devoluciones" element={<LegalPage page="devoluciones" />} />
                   <Route path="/politica-de-envios" element={<LegalPage page="envios" />} />
