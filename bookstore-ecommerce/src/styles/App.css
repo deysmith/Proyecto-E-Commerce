@@ -144,6 +144,9 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .product-card__add { width: 80%; margin: 8px auto; padding: 8px 12px; border: none; border-radius: 8px; background: var(--color-primary); color: var(--color-on-primary); cursor: pointer; font-size: 14px; font-weight: 600; display: block; transition: background 0.2s ease; }
 .product-card__add:hover { background: var(--color-accent); color: var(--color-primary); }
 .product-card__add:active { background: var(--color-accent-strong); transform: scale(0.98); transition: background 0.2s ease; }
+.product-card__add:disabled,
+.product-card__add:disabled:hover,
+.product-card__add:disabled:active { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; transform: none; }
 
 .product-card__face--back { position: absolute; inset: 0; transform: rotateY(180deg); padding: 18px 16px; border-radius: 16px; background: var(--color-primary); color: var(--color-on-primary); overflow: hidden; }
 .product-card__face--back .product-card__category { color: var(--color-accent); }
@@ -186,6 +189,9 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .detail-cover .product-detail__add{margin-top:12px;width:100%;max-width:260px;padding:10px 18px;border:none;border-radius:999px;background: var(--color-primary); color: var(--color-on-primary);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s ease,transform .2s ease}.detail-cover .product-card__add:hover{background:var(--color-accent-strong);transform:translateY(-1px)}.detail-cover .product-card__add:active{transform:translateY(0)}
 .detail-cover .product-detail__add:hover { background: var(--color-accent); color: var(--color-primary); }
 .detail-cover .product-detail__add:hover { background: var(--color-accent-strong); transform: scale(0.98); transition: background 0.2s ease; }
+.detail-cover .product-detail__add:disabled,
+.detail-cover .product-detail__add:disabled:hover,
+.detail-cover .product-detail__add:disabled:active { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; transform: none; }
 
 
 .detail-category { margin: 0 0 10px; color: var(--color-accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }

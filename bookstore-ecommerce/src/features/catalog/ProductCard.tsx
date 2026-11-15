@@ -6,6 +6,7 @@ import { handleAddToCart } from "../../utils/handleAddToCart"
 import { useCart } from "../carrito-de-compras/useCart"
 import { useSession } from "../session/sessionContext"
 import { getPrecioLibro } from "../../utils/segmentarUsuarios"
+import { tieneStock } from "../../utils/validarStock"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -60,7 +61,7 @@ export function ProductCard({ hit }: ProductCardProps) {
           </div>
 
 
-          {user?.role !== "ADMIN" ? (
+          {user?.role !== "ADMIN" && (tieneStock(hit) ? (
             <button
               type="button"
               className="product-card__add"
@@ -69,9 +70,15 @@ export function ProductCard({ hit }: ProductCardProps) {
               Agregar al carrito
             </button>
           ) : (
-              <></>
+              <button 
+                type="button"
+                className="product-card__add" 
+                disabled
+              >
+                Agotado
+              </button>
             ) 
-          }
+          )}
         </div>
 
         {/* <div className="product-card__face product-card__face--back">

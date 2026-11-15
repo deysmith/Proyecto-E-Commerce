@@ -13,6 +13,7 @@ import { useAnalytics } from "../features/analytics/analyticsContext"
 import { addRecentProduct } from "../utils/recentProducts"
 import { useSession } from "../features/session/sessionContext"
 import { getPrecioLibro } from "../utils/segmentarUsuarios"
+import { tieneStock } from "../utils/validarStock"
 
 
 /**
@@ -102,7 +103,7 @@ export default function DetailPage() {
                   alt={`Portada de ${product.productInfo.title}`}
                 />
                 {/* El administrador consulta el catálogo pero no compra */}
-                {user?.role !== "ADMIN" && (
+                {user?.role !== "ADMIN" && (tieneStock(product) ? (
                   <button
                     type="button"
                     className="product-detail__add"
@@ -110,6 +111,15 @@ export default function DetailPage() {
                   >
                     Agregar al carrito
                   </button>
+                ) : (
+                    <button 
+                      type="button"
+                      className="product-detail__add"
+                      disabled
+                    >
+                      Agotado
+                    </button>
+                  ) 
                 )}
 
               </div>
@@ -218,11 +228,11 @@ export default function DetailPage() {
                   <h2>Disponibilidad</h2>
 
                   <p className={
-                    product.inventory.in_stock
+                    tieneStock(product)
                       ? "stock-available"
                       : "stock-unavailable"
                   }>
-                    {product.inventory.in_stock
+                    {tieneStock(product)
                       ? "Disponible"
                       : "Agotado"}
                   </p>
