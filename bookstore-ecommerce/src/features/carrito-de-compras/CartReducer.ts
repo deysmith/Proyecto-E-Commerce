@@ -5,6 +5,9 @@ import type { ProductRecord } from "../../types/productRecord"
  * Solo se guarda la información necesaria (no todo el producto de Algolia)
  * para que lo que va a localStorage sea liviano.
  * El subtotal de cada línea se calcula con getItemSubtotal (precio x cantidad).
+ *
+ * "price" es el precio unitario que paga el cliente: el B2C o el B2B según su rol cuando agregó el libro.
+ * Se guarda aquí una sola vez y de aquí lo leen el carrito, el checkout y la orden, así nunca se contradicen.
  */
 export interface CartItem {
   id: string
@@ -21,7 +24,8 @@ export interface CartState {
 
 // Acciones que puede recibir el reducer
 export type CartAction =
-  | { type: "ADD_ITEM"; product: ProductRecord }
+  // El precio ya viene resuelto según el rol (el reducer no conoce al usuario, solo recibe el precio)
+  | { type: "ADD_ITEM"; product: ProductRecord; price: number }
   | { type: "INCREASE"; id: string }
   | { type: "DECREASE"; id: string }
   | { type: "REMOVE"; id: string }
@@ -31,12 +35,12 @@ export type CartAction =
 /**
  * Convierte un producto del catálogo al formato que usa el carrito
  */
-function toCartItem(product: ProductRecord): CartItem {
+function toCartItem(product: ProductRecord, price: number): CartItem {
   return {
     id: product.objectID,
     title: product.productInfo.title,
     author: product.productInfo.author,
-    price: product.pricing.price_crc,
+    price,
     image: product.productInfo.image_url,
     quantity: 1,
   }
@@ -62,7 +66,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       }
 
       // Si no está, se agrega con cantidad 1
-      return { items: [...state.items, toCartItem(action.product)] }
+      return { items: [...state.items, toCartItem(action.product, action.price)] }
     }
 
     case "INCREASE":

@@ -63,6 +63,8 @@ export interface Orden {
   // Es el campo por el que se filtran las órdenes de una persona. Opcional porque las órdenes antiguas no lo tienen.
   clienteId?: string
   tipoCliente?: TipoCliente
+  // Lista de precios con la que se hizo la compra. Los precios de "productos" ya son los de esta lista.
+  listaPrecios?: "B2C" | "B2B"
   // Fecha y hora de creación en formato ISO (ej. 2026-10-11T23:50:00.000Z)
   fecha: string
   comprador: DatosComprador

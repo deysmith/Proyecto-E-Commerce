@@ -228,8 +228,9 @@ export default function DetailPage() {
                   </p>
 
                   {product.inventory.in_stock && (
+                    <>
                     <div className="detail-stock">
-
+                      
                       <span>
                         <strong>San José: </strong>{" "}
                         {product.inventory.stock_by_branch["san-jose"]}
@@ -246,6 +247,7 @@ export default function DetailPage() {
                       </span>
 
                     </div>
+                    </>
                   )}
                 </div>
 
@@ -255,12 +257,14 @@ export default function DetailPage() {
 
                     <div className="detail-meta">
 
+                    {user?.role === "ADMIN" && (
                       <span>
                         <strong>Precio mayorista:</strong>{" "}
                         {formatPrice(
                           product.b2b.wholesale_price_crc
                         )}
                       </span>
+                    )}
 
                       <span>
                         <strong>Cantidad mínima:</strong>{" "}
