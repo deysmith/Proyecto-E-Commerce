@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import type { ProductRecord } from "../../types/productRecord"
 
 /**
@@ -24,11 +25,20 @@ export function nombreSucursal(id: SucursalId): string {
   return SUCURSALES.find((sucursal) => sucursal.id === id)?.nombre ?? id
 }
 
-/**
- * Unidades disponibles en una sucursal.
- * Devuelve null cuando no se conoce el dato (por ejemplo, un carrito viejo), para no bloquear por algo que no se sabe.
- */
-export function getStockSucursal(stock: StockPorSucursal | undefined, id: SucursalId): number | null {
-  const unidades = stock?.[id]
-  return typeof unidades === "number" && Number.isFinite(unidades) ? Math.max(0, unidades) : null
+export function useInventarioActualizado() {
+  const [versionInventario, setVersionInventario] = useState(0)
+
+  useEffect(() => {
+    function actualizarInventario() {
+      setVersionInventario((version) => version + 1)
+    }
+
+    window.addEventListener("booksmart_inventory_updated",actualizarInventario)
+
+    return () => {
+      window.removeEventListener("booksmart_inventory_updated",actualizarInventario)
+    }
+  }, [])
+
+  return versionInventario
 }

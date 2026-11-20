@@ -9,7 +9,8 @@ import { useAnalytics } from "../analytics/analyticsContext"
 import { useSession } from "../session/sessionContext"
 import { getPrecioLibro } from "../../utils/segmentarUsuarios"
 import { SelectorSucursal } from "../sucursales/SucursalSelector"
-import { getStockSucursal, nombreSucursal, type SucursalId } from "../sucursales/Sucursales"
+import { nombreSucursal, type SucursalId } from "../sucursales/Sucursales"
+import { obtenerStockDisponible } from "../../services/inventoryServices"
 
 /**
  * Proveedor del estado global del carrito (Context API + useReducer).
@@ -55,8 +56,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function addItem(product: ProductRecord, sucursal: SucursalId, cantidad = 1) {
     // Sin existencias suficientes en esa sucursal no se agrega
-    if ((getStockSucursal(product.inventory.stock_by_branch, sucursal) ?? 0) < cantidad) return
+    const stockDisponible = obtenerStockDisponible(product.objectID, product.inventory.stock_by_branch, sucursal) ?? 0
 
+    if (stockDisponible < cantidad) return
     // El precio se decide aquí, que es donde se conoce al usuario: B2B paga el mayorista, el resto el precio B2C
     dispatch({ type: "ADD_ITEM", product, price: getPrecioLibro(product, user?.role), sucursal, cantidad })
     // Cada clic en "Agregar al carrito" suma las unidades elegidas

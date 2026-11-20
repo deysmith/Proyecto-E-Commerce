@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { ProductRecord } from "../../types/productRecord"
-import { SUCURSALES, getStockSucursal, type SucursalId } from "./Sucursales"
+import { SUCURSALES, type SucursalId, useInventarioActualizado } from "./Sucursales"
+import { obtenerStockDisponible } from "../../services/inventoryServices"
 
 interface SelectorSucursalProps {
   // Libro que se quiere agregar; null mantiene la ventana cerrada
@@ -19,18 +20,18 @@ interface SelectorSucursalProps {
  * Se cierra con cancelar, con Escape o haciendo clic fuera.
  */
 export function SelectorSucursal({ producto, cantidad, minimoB2B, onConfirmar, onCancelar }: SelectorSucursalProps) {
+  const versionInventario = useInventarioActualizado()
   const abierto = producto !== null
   const [elegida, setElegida] = useState<SucursalId | null>(null)
   const botonCancelar = useRef<HTMLButtonElement>(null)
 
-  const stockDe = (id: SucursalId) => (producto ? getStockSucursal(producto.inventory.stock_by_branch, id) ?? 0 : 0)
-
+  const stockDe = (id: SucursalId) => producto ? obtenerStockDisponible(producto.objectID, producto.inventory.stock_by_branch, id) ?? 0 : 0
   // Cada vez que se abre para un libro, se deja marcada la primera sucursal que tenga la cantidad pedida
   useEffect(() => {
     if (!producto) return
-    const primera = SUCURSALES.find((s) => (getStockSucursal(producto.inventory.stock_by_branch, s.id) ?? 0) >= cantidad)
+    const primera = SUCURSALES.find((sucursal) => stockDe(sucursal.id) >= cantidad)
     setElegida(primera?.id ?? null)
-  }, [producto, cantidad])
+  }, [producto, cantidad, versionInventario])
 
   useEffect(() => {
     if (!abierto) return

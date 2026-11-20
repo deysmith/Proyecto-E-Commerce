@@ -23,6 +23,7 @@ import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { useSession } from "../features/session/sessionContext"
+import { descontarInventarioOrden } from "../services/inventoryServices"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -145,17 +146,36 @@ export default function CheckoutPage() {
   /**
    * Pago aprobado: la orden ya está confirmada y guardada. Se pasa a la pantalla de confirmación y se vacía el carrito.
    */
-  function terminarCompra(ordenConfirmada: Orden) {
+  async function terminarCompra(ordenConfirmada: Orden) {
+    // El pago ya fue aprobado: se descuenta el inventario.
+    try {
+      const descontado = await descontarInventarioOrden(ordenConfirmada)
+
+      if (!descontado) {
+        console.error(
+          `No se pudo actualizar el inventario de la orden ${ordenConfirmada.numero}.`
+        )
+      }
+    } catch (error) {
+      console.error("Error al actualizar el inventario:", error)
+    }
+
     registrarEvento("purchase_completed", {
       orderNumber: ordenConfirmada.numero,
       productCount: ordenConfirmada.productos.length,
       total: ordenConfirmada.montos.total,
     })
-    // Se guarda la orden confirmada en la página para que el carrito vacío no active el bloqueo de abajo mientras se cambia de pantalla
+
+    // Se guarda la orden confirmada en el estado.
     setOrden(ordenConfirmada)
-    // replace: true para que el botón "atrás" no regrese a un checkout ya pagado
-    // state: respaldo por si el navegador no deja leer la orden de localStorage
-    navigate(`/confirmacion/${ordenConfirmada.numero}`, { replace: true, state: { orden: ordenConfirmada } })
+
+    // Se muestra la pantalla de confirmación.
+    navigate(`/confirmacion/${ordenConfirmada.numero}`, {
+      replace: true,
+      state: { orden: ordenConfirmada },
+    })
+
+    // Se vacía el carrito.
     clearCart()
   }
 

@@ -13,9 +13,9 @@ import { useAnalytics } from "../features/analytics/analyticsContext"
 import { addRecentProduct } from "../utils/recentProducts"
 import { useSession } from "../features/session/sessionContext"
 import { getPrecioLibro } from "../utils/segmentarUsuarios"
-import { tieneStock } from "../utils/validarStock"
-import { SUCURSALES } from "../features/sucursales/Sucursales"
+import { SUCURSALES, useInventarioActualizado } from "../features/sucursales/Sucursales"
 import { MinusIcon, PlusIcon } from "../features/carrito-de-compras/CartIcons"
+import { obtenerInventarioProducto } from "../services/inventoryServices"
 
 
 /**
@@ -27,6 +27,7 @@ export default function DetailPage() {
   const navigate = useNavigate()
   const { requestAddItem } = useCart()
   const { user } = useSession()
+  useInventarioActualizado()
 
   const puedeVerInfoEmpresas = user?.role === "BUSINESS" || user?.role === "ADMIN"
 
@@ -37,6 +38,8 @@ export default function DetailPage() {
   // Cantidad que se va a agregar al carrito. Es texto para poder borrarla mientras se escribe.
   const [cantidadTexto, setCantidadTexto] = useState("1")
   const { registrarEvento, ownerId } = useAnalytics()
+    const inventario = product ? obtenerInventarioProducto(product.objectID, product.inventory.stock_by_branch) : {}
+  const tieneExistencias = Object.values(inventario).some((stock) => (stock ?? 0) > 0)
 
   useEffect(() => {
     if (!id) return
@@ -75,9 +78,7 @@ export default function DetailPage() {
   }, [product, user?.role])
 
   // La cantidad no puede pasar de lo que tiene la sucursal con más existencias
-  const maximo = product
-    ? Math.max(1, ...SUCURSALES.map((s) => product.inventory.stock_by_branch[s.id] ?? 0))
-    : 1
+  const maximo = product ? Math.max(1, ...SUCURSALES.map((s) => inventario[s.id] ?? 0)) : 1
   const cantidad = Math.min(maximo, Math.max(1, Math.floor(Number(cantidadTexto)) || 1))
 
   return (
@@ -121,7 +122,7 @@ export default function DetailPage() {
                   alt={`Portada de ${product.productInfo.title}`}
                 />
                 {/* Cantidad a agregar (el administrador consulta el catálogo pero no compra) */}
-                {user?.role !== "ADMIN" && tieneStock(product) && (
+                {user?.role !== "ADMIN" && tieneExistencias && (
                   <div className="detail-qty">
                     <label className="detail-qty__label">Cantidad</label>
                     <div className="cart-stepper" role="group" aria-label="Cantidad a agregar">
@@ -169,7 +170,7 @@ export default function DetailPage() {
                   </div>
                 )}
 
-                {user?.role !== "ADMIN" && (tieneStock(product) ? (
+                {user?.role !== "ADMIN" && (tieneExistencias ? (
                   <button
                     type="button"
                     className="product-detail__add"
@@ -300,11 +301,11 @@ export default function DetailPage() {
                   <h2>Disponibilidad</h2>
 
                   <p className={
-                    tieneStock(product)
+                    tieneExistencias
                       ? "stock-available"
                       : "stock-unavailable"
                   }>
-                    {tieneStock(product)
+                    {tieneExistencias
                       ? "Disponible"
                       : "Agotado"}
                   </p>
@@ -313,9 +314,13 @@ export default function DetailPage() {
                   {product.inventory.in_stock && (
                     <div className="detail-stock">
                       {SUCURSALES.map((s) => {
-                        const unidades = product.inventory.stock_by_branch[s.id] ?? 0
+                        const unidades = inventario[s.id] ?? 0
+
                         return (
-                          <span key={s.id} className={unidades === 0 ? "is-out" : undefined}>
+                          <span
+                            key={s.id}
+                            className={unidades === 0 ? "is-out" : undefined}
+                          >
                             <strong>{s.nombre}: </strong>{" "}
                             {unidades === 0 ? "Agotado" : unidades}
                           </span>
@@ -324,7 +329,7 @@ export default function DetailPage() {
                     </div>
                   )}
 
-                  {tieneStock(product) && user?.role !== "ADMIN" && (
+                  {tieneExistencias && user?.role !== "ADMIN" && (
                     <p className="detail-stock__hint">Elige la sucursal al agregar el libro al carrito.</p>
                   )}
                 </div>

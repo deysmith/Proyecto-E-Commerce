@@ -1,6 +1,7 @@
 import type { CartItem } from "./CartReducer"
 import type { RolUsuario } from "../session/roles"
-import { getStockSucursal, nombreSucursal } from "../sucursales/Sucursales"
+import { nombreSucursal } from "../sucursales/Sucursales"
+import { obtenerStockDisponible } from "../../services/inventoryServices"
 
 /**
  * Reglas que impiden pasar del carrito al checkout:
@@ -37,7 +38,7 @@ export function getMinimoB2B(item: CartItem, rol?: RolUsuario): number | null {
  * Existencias del libro en la sucursal de la línea. null si no se conocen (carrito anterior a las sucursales).
  */
 export function getStockItem(item: CartItem): number | null {
-  return item.sucursal ? getStockSucursal(item.stockByBranch, item.sucursal) : null
+  return item.sucursal ? obtenerStockDisponible(item.id, item.stockByBranch, item.sucursal) : null
 }
 
 /**

@@ -6,7 +6,8 @@ import { handleAddToCart } from "../../utils/handleAddToCart"
 import { useCart } from "../carrito-de-compras/useCart"
 import { useSession } from "../session/sessionContext"
 import { getPrecioLibro } from "../../utils/segmentarUsuarios"
-import { tieneStock } from "../../utils/validarStock"
+import { obtenerInventarioProducto } from "../../services/inventoryServices"
+import { useInventarioActualizado } from "../sucursales/Sucursales"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -27,6 +28,9 @@ export function ProductCard({ hit }: ProductCardProps) {
   const { t } = useTranslation()
   const { requestAddItem } = useCart()
   const { user } = useSession()
+  useInventarioActualizado()
+  const inventario = obtenerInventarioProducto(hit.objectID,hit.inventory.stock_by_branch)
+  const tieneExistencias = Object.values(inventario).some((stock) => (stock ?? 0) > 0)
   
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
@@ -61,7 +65,7 @@ export function ProductCard({ hit }: ProductCardProps) {
           </div>
 
 
-          {user?.role !== "ADMIN" && (tieneStock(hit) ? (
+          {user?.role !== "ADMIN" && (tieneExistencias ? (
             <button
               type="button"
               className="product-card__add"
