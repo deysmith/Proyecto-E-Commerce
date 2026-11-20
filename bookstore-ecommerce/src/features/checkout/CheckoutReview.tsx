@@ -4,10 +4,12 @@ import { OrderProductsSummary } from "../ordenes/OrderProductsSummary"
 import { OrderDataCards } from "../ordenes/OrderDataCards"
 import { AceptacionTerminos } from "../legal/AceptacionTerminos"
 import type { DatosComprador, DatosEntrega } from "./CheckoutTypes"
+import type { Empresa } from "../session/empresa"
 
 interface CheckoutReviewProps {
   comprador: DatosComprador
   entrega: DatosEntrega
+  empresa: Empresa | null
   // Mensaje de error si no se pudo guardar la orden (null = no hay error)
   errorGuardado: string | null
   // Casilla de aceptación de los términos y las políticas
@@ -30,6 +32,7 @@ interface CheckoutReviewProps {
 export function CheckoutReview({
   comprador,
   entrega,
+  empresa,
   errorGuardado,
   terminosAceptados,
   errorTerminos,
@@ -49,7 +52,7 @@ export function CheckoutReview({
 
       <OrderProductsSummary productos={items.map(productoParaOrden)} montos={totals} />
 
-      <OrderDataCards comprador={comprador} entrega={entregaParaOrden(entrega)} onEditar={onEditar} />
+      <OrderDataCards comprador={comprador} entrega={entregaParaOrden(entrega)} empresa={empresa} onEditar={onEditar} />
 
       <AceptacionTerminos aceptado={terminosAceptados} mostrarError={errorTerminos} onCambiar={onCambiarTerminos} />
 

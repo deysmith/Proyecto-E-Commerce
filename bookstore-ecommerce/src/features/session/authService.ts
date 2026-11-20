@@ -1,5 +1,6 @@
 import { searchClient } from "../../services/algoliaService"
 import { esRolValido, type RolUsuario } from "./roles"
+import { esEmpresaValida, type Empresa } from "./empresa"
 
 /**
  * Registro tal como está guardado en el índice de usuarios de Algolia
@@ -9,6 +10,7 @@ interface UsuarioAlgolia {
   clave: string
   nombre: string
   rol: string
+  empresa?: unknown // Solo para clientes BUSINESS, contiene nombre y cédula jurídica
 }
 
 // Datos del usuario que se guardan en la sesión (sin la clave)
@@ -16,6 +18,7 @@ export interface UsuarioValidado {
   correo: string
   nombre: string
   rol: RolUsuario
+  empresa: Empresa | null
 }
 
 export type ResultadoLogin =
@@ -62,7 +65,14 @@ export async function validarCredenciales(correo: string, clave: string): Promis
 
     return {
       ok: true,
-      usuario: { correo: usuario.correo.toLowerCase(), nombre: usuario.nombre, rol: usuario.rol },
+      usuario: {
+        correo: usuario.correo.toLowerCase(),
+        nombre: usuario.nombre,
+        rol: usuario.rol,
+        empresa: usuario.rol === "BUSINESS" && esEmpresaValida(usuario.empresa)
+          ? { nombre: usuario.empresa.nombre.trim(), cedulaJuridica: usuario.empresa.cedulaJuridica }
+          : null,
+      },
     }
   } catch {
     // Error de red o de Algolia: se muestra un mensaje entendible en vez del error técnico

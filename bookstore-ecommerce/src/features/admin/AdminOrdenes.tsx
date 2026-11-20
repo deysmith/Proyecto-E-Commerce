@@ -66,7 +66,7 @@ export default function AdminOrdenes() {
           <input
             id="admin-buscar-orden"
             type="search"
-            placeholder="Número de orden, nombre o correo"
+                        placeholder="Número de orden, cliente, correo o empresa"
             value={filtros.texto}
             onChange={(evento) => cambiarFiltro("texto", evento.target.value)}
           />
@@ -144,8 +144,14 @@ export default function AdminOrdenes() {
                       <span className="admin-tabla__sub">{orden.comprador.correo}</span>
                     </td>
                     <td>{nombreTipoCliente(orden.tipoCliente)}</td>
-                    {/* La información de empresa se agrega a la orden en la tarea de clientes B2B */}
-                    <td>—</td>
+                    <td>
+                      {orden.empresa ? (
+                        <>
+                          <strong>{orden.empresa.nombre}</strong>
+                          <span className="admin-tabla__sub">{orden.empresa.cedulaJuridica}</span>
+                        </>
+                      ) : "—"}
+                    </td>
                     <td>{sucursalesDeOrden(orden)}</td>
                     <td className="admin-tabla__numero">{formatPrice(orden.montos.total)}</td>
                     <td><EstadoOrdenChip estado={orden.estadoOrden} /></td>

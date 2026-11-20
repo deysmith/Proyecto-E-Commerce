@@ -3,6 +3,7 @@ import { CheckoutField } from "./CheckoutField"
 import { CheckoutErrorBanner } from "./CheckoutErrorBanner"
 import type { CampoComprador, DatosComprador } from "./CheckoutTypes"
 import { prefijoTelefonoInvalido, validarComprador } from "./CheckoutValidations"
+import type { Empresa } from "../session/empresa"
 
 interface BuyerFormProps {
   datos: DatosComprador
@@ -10,6 +11,7 @@ interface BuyerFormProps {
   onCambio: (datos: DatosComprador) => void
   onContinuar: () => void
   onVolverAlCarrito: () => void
+  empresa?: Empresa | null
 }
 
 // Orden en que aparecen los campos (sirve para enfocar el primero con error)
@@ -18,7 +20,7 @@ const ORDEN_CAMPOS: CampoComprador[] = ["nombreCompleto", "correo", "telefono"]
 /**
  * Formulario de datos del comprador. Se valida en cada render y se muestran los errores
  */
-export function BuyerForm({ datos, onCambio, onContinuar, onVolverAlCarrito, mostrarErroresInicial = false }: BuyerFormProps) {
+export function BuyerForm({ datos, onCambio, onContinuar, onVolverAlCarrito, mostrarErroresInicial = false, empresa }: BuyerFormProps) {
   const [tocados, setTocados] = useState<Partial<Record<CampoComprador, boolean>>>({})
   const [intentoContinuar, setIntentoContinuar] = useState(mostrarErroresInicial)
 
@@ -65,6 +67,13 @@ export function BuyerForm({ datos, onCambio, onContinuar, onVolverAlCarrito, mos
       <p className="checkout-section__intro">
         Con estos datos te enviamos la confirmación de tu compra y te contactamos si hay algún problema con la entrega.
       </p>
+
+      {empresa && (
+        <p className="checkout-banner checkout-empresa">
+          Compras a nombre de <strong>{empresa.nombre}</strong> (cédula jurídica {empresa.cedulaJuridica}) con precios y condiciones B2B.
+          Estos datos quedan registrados en la orden.
+        </p>
+      )}
 
       <CheckoutErrorBanner cantidad={intentoContinuar ? Object.keys(errores).length : 0} />
 
