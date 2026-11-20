@@ -90,7 +90,6 @@ function ListaOrdenes({ clienteId, esInvitado }: OrdersPageProps) {
  */
 export default function OrdersPage() {
   const { user } = useSession()
-  const esAdmin = user?.role === "ADMIN"
   const { clienteId, tipoCliente } = identidadDeCliente(user)
 
   return (
@@ -110,15 +109,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {esAdmin ? (
-          <section className="cart-empty" aria-live="polite">
-            <h2>Los administradores no tienen órdenes propias</h2>
-            <p>Esta sección es para los clientes. Las órdenes de todos los clientes se consultan desde el panel administrativo.</p>
-            <Link to="/" className="cart-empty__button">Ir al catálogo</Link>
-          </section>
-        ) : (
-          <ListaOrdenes key={clienteId} clienteId={clienteId} esInvitado={tipoCliente === "INVITADO"} />
-        )}
+        <ListaOrdenes key={clienteId} clienteId={clienteId} esInvitado={tipoCliente === "INVITADO"} />
       </main>
 
       <Footer />

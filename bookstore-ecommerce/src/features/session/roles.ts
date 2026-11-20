@@ -13,3 +13,10 @@ export const NOMBRE_ROL: Record<RolUsuario, string> = {
 export function esRolValido(rol: unknown): rol is RolUsuario {
   return rol === "CUSTOMER" || rol === "BUSINESS" || rol === "ADMIN"
 }
+
+// Los invitados pueden realizar compras sin necesidad de iniciar sesión.
+export type RolAcceso = RolUsuario | "INVITADO"
+
+export const ROLES_CLIENTES: RolAcceso[] = ["INVITADO", "CUSTOMER", "BUSINESS"]
+
+export const ROLES_ADMIN: RolAcceso[] = ["ADMIN"]

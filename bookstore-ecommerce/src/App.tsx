@@ -16,6 +16,8 @@ import { CartProvider } from "./features/carrito-de-compras/CartProvider"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import { SessionProvider } from "./features/session/SessionProvider"
 import { AnalyticsProvider } from "./features/analytics/AnalyticsProvider"
+import { RutaProtegida } from "./features/session/RutaProtegida"
+import { ROLES_CLIENTES } from "./features/session/roles"
 
 // Pantalla para direcciones que no existen
 function NoEncontrada() {
@@ -56,10 +58,10 @@ export default function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/analytics" element={<AnalyticsPage />} />
                   <Route path="/producto/:id" element={<DetailPage />} />
-                  <Route path="/cart" element={<CartPage />}/>
-                  <Route path="/checkout" element={<CheckoutPage />}/>
-                  <Route path="/confirmacion/:numero" element={<ConfirmationPage />} />
-                  <Route path="/mis-ordenes" element={<OrdersPage />} />
+                  <Route path="/cart" element={<RutaProtegida rolesPermitidos={ROLES_CLIENTES}><CartPage /></RutaProtegida>} />
+                  <Route path="/checkout" element={<RutaProtegida rolesPermitidos={ROLES_CLIENTES}><CheckoutPage /></RutaProtegida>} />
+                  <Route path="/confirmacion/:numero" element={<RutaProtegida rolesPermitidos={ROLES_CLIENTES}><ConfirmationPage /></RutaProtegida>} />
+                  <Route path="/mis-ordenes" element={<RutaProtegida rolesPermitidos={ROLES_CLIENTES}><OrdersPage /></RutaProtegida>} />
                   <Route path="/terminos-y-condiciones" element={<LegalPage page="terminos" />} />
                   <Route path="/politica-de-devoluciones" element={<LegalPage page="devoluciones" />} />
                   <Route path="/politica-de-envios" element={<LegalPage page="envios" />} />
