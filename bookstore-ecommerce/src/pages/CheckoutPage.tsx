@@ -5,6 +5,8 @@ import { Footer } from "../components/Footer"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { CartSummary } from "../features/carrito-de-compras/CartSummary"
 import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
+import { CartIssues } from "../features/carrito-de-compras/CartIssues"
+import { useCartValidation } from "../features/carrito-de-compras/useCartValidation"
 import { CheckoutSteps } from "../features/checkout/CheckoutSteps"
 import { BuyerForm } from "../features/checkout/BuyerForm"
 import { DeliveryForm } from "../features/checkout/DeliveryForm"
@@ -21,6 +23,7 @@ import { ConfirmarSalida } from "../features/checkout/ConfirmarSalida"
 import { ID_ACEPTAR_TERMINOS } from "../features/legal/AceptacionTerminos"
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { useSession } from "../features/session/sessionContext"
+import { descontarInventarioOrden } from "../services/inventoryServices"
 
 const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 
@@ -31,6 +34,10 @@ const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 export default function CheckoutPage() {
   const { items, totals, clearCart } = useCart()
   const { user } = useSession()
+  // Mínimo B2B y stock de la sucursal: también se revisa aquí para que no se pueda entrar escribiendo /checkout
+  const { problemas, puedeContinuar } = useCartValidation()
+  const empresa = user?.role === "BUSINESS" ? user.empresa : null
+  const faltaEmpresa = user?.role === "BUSINESS" && !empresa
   const navigate = useNavigate()
   const [paso, setPaso] = useState(0)
   const [comprador, setComprador] = useState<DatosComprador>(compradorVacio)
@@ -51,13 +58,13 @@ export default function CheckoutPage() {
   const { registrarEvento } = useAnalytics()
 
   useEffect(() => {
-    if (items.length === 0 || checkoutTracked.current) return
+    if (items.length === 0 || !puedeContinuar || checkoutTracked.current) return
     checkoutTracked.current = true
     registrarEvento("checkout_start", {
       productCount: items.length,
       quantity: items.reduce((total, item) => total + item.quantity, 0),
     })
-  }, [items, registrarEvento])
+  }, [items, puedeContinuar, registrarEvento])
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -104,7 +111,7 @@ export default function CheckoutPage() {
     // Si es la misma orden pendiente, se conservan sus intentos de pago para que volver al resumen no los reinicie.
     // Con sesión la orden queda a nombre del correo del usuario; sin sesión, a nombre del id de invitado guardado en este navegador
     const { clienteId, tipoCliente } = identidadDeCliente(user)
-    const nuevaOrden = construirOrden({ numero, usuarioId: user?.email, clienteId, tipoCliente, items, totales: totals, comprador, entrega, terminosAceptados })
+    const nuevaOrden = construirOrden({ numero, usuarioId: user?.email, clienteId, tipoCliente, empresa, items, totales: totals, comprador, entrega, terminosAceptados })
     if (orden && orden.estadoOrden === "pendiente") nuevaOrden.intentosPago = orden.intentosPago ?? 0
 
     if (!guardarOrden(nuevaOrden)) {
@@ -141,17 +148,36 @@ export default function CheckoutPage() {
   /**
    * Pago aprobado: la orden ya está confirmada y guardada. Se pasa a la pantalla de confirmación y se vacía el carrito.
    */
-  function terminarCompra(ordenConfirmada: Orden) {
+  async function terminarCompra(ordenConfirmada: Orden) {
+    // El pago ya fue aprobado: se descuenta el inventario.
+    try {
+      const descontado = await descontarInventarioOrden(ordenConfirmada)
+
+      if (!descontado) {
+        console.error(
+          `No se pudo actualizar el inventario de la orden ${ordenConfirmada.numero}.`
+        )
+      }
+    } catch (error) {
+      console.error("Error al actualizar el inventario:", error)
+    }
+
     registrarEvento("purchase_completed", {
       orderNumber: ordenConfirmada.numero,
       productCount: ordenConfirmada.productos.length,
       total: ordenConfirmada.montos.total,
     })
-    // Se guarda la orden confirmada en la página para que el carrito vacío no active el bloqueo de abajo mientras se cambia de pantalla
+
+    // Se guarda la orden confirmada en el estado.
     setOrden(ordenConfirmada)
-    // replace: true para que el botón "atrás" no regrese a un checkout ya pagado
-    // state: respaldo por si el navegador no deja leer la orden de localStorage
-    navigate(`/confirmacion/${ordenConfirmada.numero}`, { replace: true, state: { orden: ordenConfirmada } })
+
+    // Se muestra la pantalla de confirmación.
+    navigate(`/confirmacion/${ordenConfirmada.numero}`, {
+      replace: true,
+      state: { orden: ordenConfirmada },
+    })
+
+    // Se vacía el carrito.
     clearCart()
   }
 
@@ -170,6 +196,64 @@ export default function CheckoutPage() {
           </nav>
 
           <CartEmpty texto="Para iniciar el checkout necesitas al menos un libro en tu carrito. Agrega alguno desde el catálogo y vuelve aquí para completar tu compra." />
+        </main>
+
+        <Footer />
+      </div>
+    )
+  }
+
+  // Si algún libro incumple el mínimo B2B o no hay stock en la sucursal, no se entra al checkout.
+  // Excepción: cuando la orden se acaba de confirmar, el carrito se vacía a propósito.
+  if (!puedeContinuar && orden?.estadoOrden !== "confirmada") {
+    return (
+      <div className="catalog-shell">
+        <Header />
+
+        <main className="cart-page">
+          <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
+            <Link to="/">Catálogo</Link>
+            <span aria-hidden="true">/</span>
+            <Link to="/cart">Carrito</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Checkout</span>
+          </nav>
+
+          <section className="cart-empty cart-blocked">
+            <h2>Revisa tu carrito antes de continuar</h2>
+            <p>Para iniciar el checkout corrige lo siguiente en tu carrito.</p>
+            <CartIssues problemas={problemas} />
+            <Link to="/cart" className="cart-empty__button">Volver al carrito</Link>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    )
+  }
+
+  if (faltaEmpresa) {
+    return (
+      <div className="catalog-shell">
+        <Header />
+
+        <main className="cart-page">
+          <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
+            <Link to="/">Catálogo</Link>
+            <span aria-hidden="true">/</span>
+            <Link to="/cart">Carrito</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Checkout</span>
+          </nav>
+
+          <section className="cart-empty cart-blocked">
+            <h2>Faltan los datos de tu empresa</h2>
+            <p>
+              Para comprar con precios B2B necesitamos la razón social y la cédula jurídica de tu empresa, y tu cuenta no los tiene completos.
+              Escríbenos a soporte para actualizarlos.
+            </p>
+            <Link to="/cart" className="cart-empty__button">Volver al carrito</Link>
+          </section>
         </main>
 
         <Footer />
@@ -212,6 +296,7 @@ export default function CheckoutPage() {
                 onContinuar={() => avanzarDesde(0)}
                 mostrarErroresInicial={forzarErrores}
                 onVolverAlCarrito={() => pedirSalida("/cart")}
+                empresa={empresa}
               />
             )}
 
@@ -236,6 +321,7 @@ export default function CheckoutPage() {
                 onEditar={irAPaso}
                 onAtras={() => irAPaso(1)}
                 onConfirmar={confirmarCompra}
+                empresa={empresa}
               />
             )}
 

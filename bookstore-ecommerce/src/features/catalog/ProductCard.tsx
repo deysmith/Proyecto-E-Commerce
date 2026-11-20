@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom"
 import type { ProductRecord } from "../../types/productRecord"
-import { formatPrice } from "../../utils/formatPrice"
 import { useTranslation } from "react-i18next"
 import { handleAddToCart } from "../../utils/handleAddToCart"
 import { useCart } from "../carrito-de-compras/useCart"
 import { useSession } from "../session/sessionContext"
-import { getPrecioLibro } from "../../utils/segmentarUsuarios"
-import { tieneStock } from "../../utils/validarStock"
+import { textoPrecioLibro } from "../../utils/segmentarUsuarios"
+import { obtenerInventarioProducto } from "../../services/inventoryServices"
+import { useInventarioActualizado } from "../sucursales/Sucursales"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -25,8 +25,11 @@ interface ProductCardProps {
  */
 export function ProductCard({ hit }: ProductCardProps) {
   const { t } = useTranslation()
-  const { addItem } = useCart()
+  const { requestAddItem } = useCart()
   const { user } = useSession()
+  useInventarioActualizado()
+  const inventario = obtenerInventarioProducto(hit.objectID,hit.inventory.stock_by_branch)
+  const tieneExistencias = Object.values(inventario).some((stock) => (stock ?? 0) > 0)
   
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
@@ -56,16 +59,16 @@ export function ProductCard({ hit }: ProductCardProps) {
             </p>
 
             <strong>
-              {formatPrice(getPrecioLibro(hit, user?.role))}
+              {textoPrecioLibro(hit, user?.role)}
             </strong>
           </div>
 
 
-          {user?.role !== "ADMIN" && (tieneStock(hit) ? (
+          {user?.role !== "ADMIN" && (tieneExistencias ? (
             <button
               type="button"
               className="product-card__add"
-              onClick={(event) => handleAddToCart(event, hit, addItem)}
+              onClick={(event) => handleAddToCart(event, hit, requestAddItem)}
             >
               Agregar al carrito
             </button>

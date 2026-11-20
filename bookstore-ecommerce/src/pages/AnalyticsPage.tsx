@@ -16,6 +16,16 @@ const EVENT_LABELS: Record<AnalyticsEventType, string> = {
   purchase_completed: "Compra completada",
 }
 
+// Tipos de evento que pueden ver los administradores
+const TIPOS_ADMIN: AnalyticsEventType[] = ["product_view", "search"]
+
+const TODAS_LAS_METRICAS = [
+  { type: "product_view", label: "Productos visualizados" },
+  { type: "search", label: "Búsquedas realizadas" },
+  { type: "add_to_cart", label: "Productos agregados al carrito" },
+  { type: "purchase_completed", label: "Compras realizadas" },
+] as const
+
 function formatTimestamp(timestamp: string) {
   return new Intl.DateTimeFormat("es-CR", {
     dateStyle: "medium",
@@ -47,13 +57,18 @@ function getEventDescription(event: AnalyticsEvent) {
 
 export default function AnalyticsPage() {
   const { user } = useSession()
-  // Eventos del usuario o de la sesión de invitado
   const { events } = useAnalytics()
+
+  const esAdmin = user?.role === "ADMIN"
 
   const [paginaActual, setPaginaActual] = useState(1)
   const eventosPorPagina = 10
 
-  const eventosOrdenados = [...events].reverse()
+  const eventosVisibles = esAdmin
+    ? events.filter((event) => TIPOS_ADMIN.includes(event.type))
+    : events
+
+  const eventosOrdenados = [...eventosVisibles].reverse()
   const totalPaginas = Math.ceil(eventosOrdenados.length / eventosPorPagina)
 
   useEffect(() => {
@@ -68,16 +83,12 @@ export default function AnalyticsPage() {
   const indiceInicial = indiceFinal - eventosPorPagina
   const eventosPaginados = eventosOrdenados.slice(indiceInicial, indiceFinal)
 
-  const metrics = [
-    { type: "product_view", label: "Productos visualizados" },
-    { type: "search", label: "Búsquedas realizadas" },
-    { type: "add_to_cart", label: "Productos agregados al carrito" },
-    { type: "purchase_completed", label: "Compras realizadas" },
-  ] as const
+  const metrics = esAdmin
+    ? TODAS_LAS_METRICAS.filter((metric) => TIPOS_ADMIN.includes(metric.type))
+    : TODAS_LAS_METRICAS
 
-  // Para los productos agregados al carrito se suman las cantidades, en las demás se cuentan los eventos
   function calcularMetrica(type: AnalyticsEventType) {
-    const delTipo = events.filter((event) => event.type === type)
+    const delTipo = eventosVisibles.filter((event) => event.type === type)
     if (type !== "add_to_cart") return delTipo.length
     return delTipo.reduce(
       (total, event) => total + (typeof event.details.quantity === "number" ? event.details.quantity : 1),
@@ -145,10 +156,10 @@ export default function AnalyticsPage() {
               <p className="eyebrow">Registro local</p>
               <h2 id="analytics-activity-title">Actividad reciente</h2>
             </div>
-            <span>{events.length} eventos</span>
+            <span>{eventosVisibles.length} eventos</span>
           </div>
 
-          {events.length === 0 ? (
+          {eventosVisibles.length === 0 ? (
             <div className="analytics-activity__empty">
               <p>Aún no hay actividad registrada. Explora el catálogo, busca un libro o agrega algo al carrito y aquí verás tus métricas.</p>
               <Link to="/" className="session-form__submit">Ir al catálogo</Link>

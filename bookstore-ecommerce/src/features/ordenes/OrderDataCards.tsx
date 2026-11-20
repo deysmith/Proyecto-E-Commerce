@@ -1,9 +1,11 @@
 import type { DatosComprador } from "../checkout/CheckoutTypes"
 import type { EntregaOrden } from "./OrderTypes"
+import type { Empresa } from "../session/empresa"
 
 interface OrderDataCardsProps {
   comprador: DatosComprador
   entrega: EntregaOrden
+  empresa?: Empresa | null
   // Si se pasa, cada tarjeta muestra un botón "Editar" 0 para el comprador y 1 para la entrega. Se llama con el paso que se quiere editar.
   onEditar?: (paso: number) => void
 }
@@ -12,9 +14,21 @@ interface OrderDataCardsProps {
  * Tarjetas con los datos del comprador y de la entrega.
  * Se usan en el resumen del checkout (con botón Editar) y en la confirmación (solo lectura).
  */
-export function OrderDataCards({ comprador, entrega, onEditar }: OrderDataCardsProps) {
+export function OrderDataCards({ comprador, entrega, empresa, onEditar }: OrderDataCardsProps) {
   return (
     <div className="checkout-review__cards">
+      {empresa && (
+        <section className="checkout-review__card checkout-review__card--full" aria-labelledby="revision-empresa">
+          <div className="checkout-review__card-head">
+            <h3 id="revision-empresa">Empresa</h3>
+          </div>
+          <dl className="checkout-review__data">
+            <div><dt>Razón social</dt><dd>{empresa.nombre}</dd></div>
+            <div><dt>Cédula jurídica</dt><dd>{empresa.cedulaJuridica}</dd></div>
+          </dl>
+        </section>
+      )}
+
       <section className="checkout-review__card" aria-labelledby="revision-comprador">
         <div className="checkout-review__card-head">
           <h3 id="revision-comprador">Datos del comprador</h3>

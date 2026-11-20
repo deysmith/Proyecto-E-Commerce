@@ -1,4 +1,5 @@
 import type { CartItem, CartState } from "./CartReducer"
+import { esSucursalValida } from "../sucursales/Sucursales"
 
 export const CART_STORAGE_KEY = "booksmart_cart"
 
@@ -16,7 +17,9 @@ function esCartItemValido(item: unknown): item is CartItem {
     typeof i.price === "number" &&
     typeof i.image === "string" &&
     typeof i.quantity === "number" &&
-    i.quantity >= 1
+    i.quantity >= 1 &&
+    // La sucursal es opcional (carritos anteriores); si viene, tiene que ser una sucursal que exista
+    (i.sucursal === undefined || esSucursalValida(i.sucursal))
   )
 }
 

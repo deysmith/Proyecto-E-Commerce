@@ -5,7 +5,8 @@ import {
   esOrdenValida,
   marcarOrdenesSincronizadas,
 } from "../features/ordenes/OrderStorage"
-import type { Orden } from "../features/ordenes/OrderTypes"
+import type { EstadoOrden, EstadoPago, Orden } from "../features/ordenes/OrderTypes"
+import type { TipoCliente } from "../features/ordenes/OrderCustomer"
 
 /**
  * Conexión con el índice de órdenes de Algolia.
@@ -111,4 +112,48 @@ export async function consultarOrdenesDelCliente(clienteId: string): Promise<Ord
 
   const ordenes = [...porNumero.values()].sort((a, b) => b.fecha.localeCompare(a.fecha))
   return { ordenes, algoliaDisponible: remotas !== null }
+}
+
+/**
+ * Filtros de la consulta de órdenes del panel administrativo.
+ */
+export interface FiltrosOrdenesAdmin {
+  texto: string
+  estadoOrden: EstadoOrden | ""
+  estadoPago: EstadoPago | ""
+  tipoCliente: TipoCliente | ""
+}
+
+export interface OrdenesAdmin {
+  ordenes: Orden[]
+  // Cantidad total de órdenes que coinciden en Algolia
+  total: number
+}
+
+/**
+ * Consulta en el índice de órdenes de Algolia las órdenes de todos los clientes (solo para el administrador).
+ * El texto busca por número de orden, nombre o correo del comprador; los estados y el tipo de cliente se usan como filtros.
+ * Devuelve null si Algolia no está disponible.
+ */
+export async function consultarTodasLasOrdenes(filtros: FiltrosOrdenesAdmin): Promise<OrdenesAdmin | null> {
+  if (!cliente) return null
+
+  // Los valores vienen de listas fijas (los select del panel), por eso se pueden poner directo en el filtro
+  const condiciones: string[] = []
+  if (filtros.estadoOrden) condiciones.push(`estadoOrden:"${filtros.estadoOrden}"`)
+  if (filtros.estadoPago) condiciones.push(`estadoPago:"${filtros.estadoPago}"`)
+  if (filtros.tipoCliente) condiciones.push(`tipoCliente:"${filtros.tipoCliente}"`)
+
+  try {
+    const respuesta = await cliente.searchSingleIndex({
+      indexName: INDEX_NAME,
+      searchParams: { query: filtros.texto.trim(), filters: condiciones.join(" AND "), hitsPerPage: 1000 },
+    })
+
+    // De la más reciente a la más antigua
+    const ordenes = (respuesta.hits as unknown[]).filter(esOrdenValida).sort((a, b) => b.fecha.localeCompare(a.fecha))
+    return { ordenes, total: respuesta.nbHits ?? ordenes.length }
+  } catch {
+    return null
+  }
 }

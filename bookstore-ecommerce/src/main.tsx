@@ -9,6 +9,7 @@ import './styles/Legal.css'
 import './styles/Personalizacion.css'
 import './styles/Login.css'
 import './styles/Orders.css'
+import './styles/Admin.css'
 import './i18n/config.ts'
 import App from './App.tsx'
 

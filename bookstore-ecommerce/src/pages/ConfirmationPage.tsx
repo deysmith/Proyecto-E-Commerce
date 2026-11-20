@@ -4,6 +4,7 @@ import { Footer } from "../components/Footer"
 import { EstadoOrdenChip, EstadoPagoChip } from "../features/ordenes/EstadoChips"
 import { OrderProductsSummary } from "../features/ordenes/OrderProductsSummary"
 import { OrderDataCards } from "../features/ordenes/OrderDataCards"
+import { OrderCondiciones } from "../features/ordenes/OrderCondiciones"
 import { buscarOrden } from "../features/ordenes/OrderStorage"
 import type { Orden } from "../features/ordenes/OrderTypes"
 import { formatDate } from "../utils/formatDate"
@@ -66,8 +67,9 @@ export default function ConfirmationPage() {
 
             <section className="cart-panel checkout-panel confirmation-summary" aria-label="Resumen de la compra">
               <h2 className="checkout-section__title">Resumen de la compra</h2>
+              <OrderCondiciones tipoCliente={orden.tipoCliente} listaPrecios={orden.listaPrecios} />
               <OrderProductsSummary productos={orden.productos} montos={orden.montos} />
-              <OrderDataCards comprador={orden.comprador} entrega={orden.entrega} />
+                            <OrderDataCards comprador={orden.comprador} entrega={orden.entrega} empresa={orden.empresa} />
 
               <div className="checkout-actions confirmation-actions">
                 <Link to="/" className="checkout-btn">Seguir explorando el catálogo</Link>

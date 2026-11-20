@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { SearchBox, useClearRefinements, useSearchBox } from "react-instantsearch";
 import type { ProductRecord } from "../types/productRecord";
 import { fetchSearchSuggestions } from "../services/algoliaService";
-import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";import { formatPrice } from "../utils/formatPrice";
+import { addRecentSearch, clearRecentSearches, getRecentSearches, removeRecentSearch } from "../utils/recentSearches";
 import { useAnalytics } from "../features/analytics/analyticsContext";
 import { getCategoriaMasComun } from "../features/personalizacion/categoriaFavorita";
-import { getPrecioLibro } from "../utils/segmentarUsuarios";
+import { textoPrecioLibro } from "../utils/segmentarUsuarios";
 import { useSession } from "../features/session/sessionContext";
 
 /**
@@ -200,7 +200,7 @@ export function SearchBar() {
                     </span>
 
                     <span className="header-search__suggestion-price">
-                      {formatPrice(getPrecioLibro(hit, user?.role))}
+                      {textoPrecioLibro(hit, user?.role)}
                     </span>
                   </button>
                 </li>

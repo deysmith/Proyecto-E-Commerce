@@ -2,12 +2,17 @@ import { useCart } from "../carrito-de-compras/useCart"
 import { entregaParaOrden, productoParaOrden } from "../ordenes/OrderBuilder"
 import { OrderProductsSummary } from "../ordenes/OrderProductsSummary"
 import { OrderDataCards } from "../ordenes/OrderDataCards"
+import { OrderCondiciones } from "../ordenes/OrderCondiciones"
+import { identidadDeCliente } from "../ordenes/OrderCustomer"
+import { useSession } from "../session/sessionContext"
 import { AceptacionTerminos } from "../legal/AceptacionTerminos"
 import type { DatosComprador, DatosEntrega } from "./CheckoutTypes"
+import type { Empresa } from "../session/empresa"
 
 interface CheckoutReviewProps {
   comprador: DatosComprador
   entrega: DatosEntrega
+  empresa: Empresa | null
   // Mensaje de error si no se pudo guardar la orden (null = no hay error)
   errorGuardado: string | null
   // Casilla de aceptación de los términos y las políticas
@@ -30,6 +35,7 @@ interface CheckoutReviewProps {
 export function CheckoutReview({
   comprador,
   entrega,
+  empresa,
   errorGuardado,
   terminosAceptados,
   errorTerminos,
@@ -39,6 +45,8 @@ export function CheckoutReview({
   onConfirmar,
 }: CheckoutReviewProps) {
   const { items, totals } = useCart()
+  const { user } = useSession()
+  const { tipoCliente } = identidadDeCliente(user)
 
   return (
     <div className="checkout-form">
@@ -47,9 +55,11 @@ export function CheckoutReview({
         Revisa tus libros y tus datos. Si algo no está bien, puedes corregirlo antes de continuar.
       </p>
 
+      <OrderCondiciones tipoCliente={tipoCliente} />
+
       <OrderProductsSummary productos={items.map(productoParaOrden)} montos={totals} />
 
-      <OrderDataCards comprador={comprador} entrega={entregaParaOrden(entrega)} onEditar={onEditar} />
+      <OrderDataCards comprador={comprador} entrega={entregaParaOrden(entrega)} empresa={empresa} onEditar={onEditar} />
 
       <AceptacionTerminos aceptado={terminosAceptados} mostrarError={errorTerminos} onCambiar={onCambiarTerminos} />
 
