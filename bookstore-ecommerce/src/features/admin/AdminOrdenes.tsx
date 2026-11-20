@@ -7,6 +7,7 @@ import { EstadoOrdenChip, EstadoPagoChip } from "../ordenes/EstadoChips"
 import { esSucursalValida, nombreSucursal } from "../sucursales/Sucursales"
 import { formatDate } from "../../utils/formatDate"
 import { formatPrice } from "../../utils/formatPrice"
+import { AdminError } from "./AdminError"
 
 const FILTROS_VACIOS: FiltrosOrdenesAdmin = { texto: "", estadoOrden: "", estadoPago: "", tipoCliente: "" }
 
@@ -105,10 +106,7 @@ export default function AdminOrdenes() {
       {cargando && <p className="admin-estado" role="status">Consultando órdenes…</p>}
 
       {!cargando && datos === null && (
-        <div className="checkout-banner checkout-banner--error admin-error" role="alert">
-          <p>No pudimos consultar las órdenes en este momento. Revisa tu conexión e inténtalo de nuevo.</p>
-          <button type="button" className="checkout-btn checkout-btn--ghost" onClick={() => setIntento(intento + 1)}>Reintentar</button>
-        </div>
+        <AdminError mensaje="No pudimos consultar las órdenes en este momento. Revisa tu conexión e inténtalo de nuevo." onReintentar={() => setIntento(intento + 1)} />
       )}
 
       {!cargando && datos && datos.ordenes.length === 0 && (

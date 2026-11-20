@@ -88,3 +88,37 @@ export async function fetchProductsByCategory(category: string, hitsPerPage = 20
 
   return result.hits as ProductRecord[]
 }
+
+export interface PaginaProductos {
+  productos: ProductRecord[]
+  total: number
+  totalPaginas: number
+}
+
+/**
+ * Trae una página del catálogo para el panel administrativo.
+ * Busca por título, autor o editorial.
+ * Devuelve null si Algolia no responde.
+ */
+export async function buscarProductosAdmin(texto: string, pagina: number, porPagina = 20): Promise<PaginaProductos | null> {
+  try {
+    const response = await searchClient.search([
+      {
+        indexName: import.meta.env.VITE_INDEX_NAME_PRODUCTS,
+        params: { query: texto.trim(), page: pagina, hitsPerPage: porPagina },
+      },
+    ])
+
+    const result = response.results[0]
+    if (!result || !("hits" in result)) return null
+
+    return {
+      productos: result.hits as ProductRecord[],
+      total: result.nbHits ?? 0,
+      totalPaginas: result.nbPages ?? 1,
+    }
+  } catch (error) {
+    console.error("Error al consultar los productos en Algolia:", error)
+    return null
+  }
+}
