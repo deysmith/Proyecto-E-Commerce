@@ -3,6 +3,7 @@ import Popup from 'reactjs-popup';
 import { useCart } from './useCart';
 import { useNavigate } from 'react-router-dom';
 import { CartItemRow } from './CartItemRow';
+import { itemKey } from './CartReducer';
 import { CartEmpty } from './CartEmpty';
 import { getItemSubtotal } from "./CartCalculations";
 import { formatPrice } from '../../utils/formatPrice'; 
@@ -82,7 +83,7 @@ export function CartPopUp() {
 
               <ul className="cart-popup__list">
                 {items.map((item) => (
-                  <CartItemRow key={item.id} item={item} />
+                  <CartItemRow key={itemKey(item)} item={item} />
                 ))}
               </ul>
             </div>

@@ -6,6 +6,7 @@
  */
 
 import { esRolValido, type RolUsuario } from "../session/roles"
+import { esEmpresaValida, type Empresa } from "../session/empresa"
 
 export type AnalyticsEventType =
   | "login"
@@ -31,6 +32,7 @@ export interface LocalUser {
   name: string
   role: RolUsuario
   loginAt: string
+  empresa: Empresa | null
 }
 
 export const USER_STORAGE_KEY = "booksmart_active_user"
@@ -60,14 +62,16 @@ export function getActiveUser(): LocalUser | null {
       typeof user.loginAt !== "string"
     ) return null
 
-    return { email: user.email, name: user.name, role: user.role, loginAt: user.loginAt }
+    // Las sesiones guardadas antes de esta versión no tienen empresa
+    const empresa = "empresa" in user && esEmpresaValida(user.empresa) ? user.empresa : null
+    return { email: user.email, name: user.name, role: user.role, loginAt: user.loginAt, empresa }
   } catch {
     return null
   }
 }
 
-export function startLocalSession(email: string, name: string, role: RolUsuario): LocalUser {
-  const user = { email: email.trim().toLowerCase(), name: name.trim(), role, loginAt: new Date().toISOString() }
+export function startLocalSession(email: string, name: string, role: RolUsuario, empresa: Empresa | null = null): LocalUser {
+  const user = { email: email.trim().toLowerCase(), name: name.trim(), role, loginAt: new Date().toISOString(), empresa }
   try {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
   } catch {

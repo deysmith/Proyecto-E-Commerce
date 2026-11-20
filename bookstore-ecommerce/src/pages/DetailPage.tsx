@@ -11,6 +11,11 @@ import { useCart } from "../features/carrito-de-compras/useCart"
 import { handleAddToCart } from "../utils/handleAddToCart"
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { addRecentProduct } from "../utils/recentProducts"
+import { useSession } from "../features/session/sessionContext"
+import { textoPrecioLibro } from "../utils/segmentarUsuarios"
+import { SUCURSALES, useInventarioActualizado } from "../features/sucursales/Sucursales"
+import { MinusIcon, PlusIcon } from "../features/carrito-de-compras/CartIcons"
+import { obtenerInventarioProducto } from "../services/inventoryServices"
 
 
 /**
@@ -20,13 +25,21 @@ export default function DetailPage() {
   const { id } = useParams()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { addItem } = useCart()
+  const { requestAddItem } = useCart()
+  const { user } = useSession()
+  useInventarioActualizado()
+
+  const puedeVerInfoEmpresas = user?.role === "BUSINESS" || user?.role === "ADMIN"
 
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const lastTrackedProduct = useRef<string | null>(null)
+  // Cantidad que se va a agregar al carrito. Es texto para poder borrarla mientras se escribe.
+  const [cantidadTexto, setCantidadTexto] = useState("1")
   const { registrarEvento, ownerId } = useAnalytics()
+    const inventario = product ? obtenerInventarioProducto(product.objectID, product.inventory.stock_by_branch) : {}
+  const tieneExistencias = Object.values(inventario).some((stock) => (stock ?? 0) > 0)
 
   useEffect(() => {
     if (!id) return
@@ -55,6 +68,18 @@ export default function DetailPage() {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }, [id, registrarEvento, ownerId])
+
+  // Un cliente B2B empieza con su cantidad mínima; el resto con 1
+  const minimoB2B = user?.role === "BUSINESS" ? product?.b2b?.min_order_quantity ?? 1 : 1
+  useEffect(() => {
+    if (!product) return
+    const minimo = user?.role === "BUSINESS" ? product.b2b?.min_order_quantity ?? 1 : 1
+    setCantidadTexto(String(Math.max(1, minimo)))
+  }, [product, user?.role])
+
+  // La cantidad no puede pasar de lo que tiene la sucursal con más existencias
+  const maximo = product ? Math.max(1, ...SUCURSALES.map((s) => inventario[s.id] ?? 0)) : 1
+  const cantidad = Math.min(maximo, Math.max(1, Math.floor(Number(cantidadTexto)) || 1))
 
   return (
     <div className="catalog-shell">
@@ -96,13 +121,80 @@ export default function DetailPage() {
                   src={product.productInfo.image_url}
                   alt={`Portada de ${product.productInfo.title}`}
                 />
-                <button
-                  type="button"
-                  className="product-detail__add"
-                  onClick={(event) => handleAddToCart(event, product, addItem)}
-                >
-                  Agregar al carrito
-                </button>
+                {/* Cantidad a agregar (el administrador consulta el catálogo pero no compra) */}
+                {user?.role !== "ADMIN" && tieneExistencias && (
+                  <div className="detail-qty">
+                    <label className="detail-qty__label">Cantidad</label>
+                    <div className="cart-stepper" role="group" aria-label="Cantidad a agregar">
+                      <button
+                        type="button"
+                        onClick={() => setCantidadTexto(String(cantidad - 1))}
+                        disabled={cantidad <= 1}
+                        aria-label="Disminuir cantidad"
+                      >
+                        <MinusIcon />
+                      </button>
+                      <input
+                        id="detail-cantidad"
+                        className="cart-stepper__input"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={maximo}
+                        value={cantidadTexto}
+                        onChange={(event) => setCantidadTexto(event.target.value)}
+                        onBlur={() => setCantidadTexto(String(cantidad))}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCantidadTexto(String(cantidad + 1))}
+                        disabled={cantidad >= maximo}
+                        aria-label="Aumentar cantidad"
+                      >
+                        <PlusIcon />
+                      </button>
+                    </div>
+                    <div className="detail-qty__messages">
+                      {cantidad >= maximo && (
+                        <p className="detail-qty__note">
+                          Es la mayor cantidad que tiene una sola sucursal.
+                        </p>
+                      )}
+
+                      {minimoB2B > 1 && cantidad < minimoB2B && (
+                        <p className="detail-qty__note detail-qty__note--warn">
+                          El mínimo B2B es {minimoB2B} unidades.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {user?.role !== "ADMIN" && (tieneExistencias ? (
+                  <button
+                    type="button"
+                    className="product-detail__add"
+                    onClick={(event) => handleAddToCart(event, product, requestAddItem, cantidad)}
+                  >
+                    Agregar al carrito
+                  </button>
+                ) : (
+                    <button 
+                      type="button"
+                      className="product-detail__add"
+                      disabled
+                    >
+                      Agotado
+                    </button>
+                  ) 
+                )}
+
+                {user?.role === "BUSINESS" && product.b2b.min_order_quantity > 1 && (
+                  <p className="detail-min-note">
+                    Compra mínima B2B: {product.b2b.min_order_quantity} unidades por libro.
+                  </p>
+                )}
+
               </div>
 
               <div className="detail-info">
@@ -123,7 +215,7 @@ export default function DetailPage() {
 
                 <div className="detail-price-section">
                   <strong className="detail-price">
-                    {formatPrice(product.pricing.price_crc)}
+                    {textoPrecioLibro(product, user?.role)}
                   </strong>
 
                   {product.pricing.discount > 0 && (
@@ -209,61 +301,67 @@ export default function DetailPage() {
                   <h2>Disponibilidad</h2>
 
                   <p className={
-                    product.inventory.in_stock
+                    tieneExistencias
                       ? "stock-available"
                       : "stock-unavailable"
                   }>
-                    {product.inventory.in_stock
+                    {tieneExistencias
                       ? "Disponible"
                       : "Agotado"}
                   </p>
 
+                  {/* Existencias de cada sucursal; la sucursal se elige al agregar el libro al carrito */}
                   {product.inventory.in_stock && (
                     <div className="detail-stock">
+                      {SUCURSALES.map((s) => {
+                        const unidades = inventario[s.id] ?? 0
 
-                      <span>
-                        <strong>San José: </strong>{" "}
-                        {product.inventory.stock_by_branch["san-jose"]}
-                      </span>
-
-                      <span>
-                        <strong>Cartago: </strong>{" "}
-                        {product.inventory.stock_by_branch.cartago}
-                      </span>
-
-                      <span>
-                        <strong>Limón: </strong>{" "}
-                        {product.inventory.stock_by_branch.limon}
-                      </span>
-
+                        return (
+                          <span
+                            key={s.id}
+                            className={unidades === 0 ? "is-out" : undefined}
+                          >
+                            <strong>{s.nombre}: </strong>{" "}
+                            {unidades === 0 ? "Agotado" : unidades}
+                          </span>
+                        )
+                      })}
                     </div>
+                  )}
+
+                  {tieneExistencias && user?.role !== "ADMIN" && (
+                    <p className="detail-stock__hint">Elige la sucursal al agregar el libro al carrito.</p>
                   )}
                 </div>
 
-                <div className="detail-section detail-b2b">
-                  <h2>Información para empresas</h2>
+                {puedeVerInfoEmpresas && (
+                  <div className="detail-section detail-b2b">
+                    <h2>Información para empresas</h2>
 
-                  <div className="detail-meta">
+                    <div className="detail-meta">
 
-                    <span>
-                      <strong>Precio mayorista:</strong>{" "}
-                      {formatPrice(
-                        product.b2b.wholesale_price_crc
-                      )}
-                    </span>
+                    {user?.role === "ADMIN" && (
+                      <span>
+                        <strong>Precio mayorista:</strong>{" "}
+                        {formatPrice(
+                          product.b2b.wholesale_price_crc
+                        )}
+                      </span>
+                    )}
 
-                    <span>
-                      <strong>Cantidad mínima:</strong>{" "}
-                      {product.b2b.min_order_quantity}
-                    </span>
+                      <span>
+                        <strong>Cantidad mínima:</strong>{" "}
+                        {product.b2b.min_order_quantity}
+                      </span>
 
-                    <span>
-                      <strong>Descuento por volumen:</strong>{" "}
-                      {product.b2b.volume_discount_pct}%
-                    </span>
+                      <span>
+                        <strong>Descuento por volumen:</strong>{" "}
+                        {product.b2b.volume_discount_pct}%
+                      </span>
 
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
             </div>

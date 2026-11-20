@@ -17,7 +17,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState(getActiveUser)
 
   function signIn(usuario: UsuarioValidado) {
-    const activeUser = startLocalSession(usuario.correo, usuario.nombre, usuario.rol)
+    const activeUser = startLocalSession(usuario.correo, usuario.nombre, usuario.rol, usuario.empresa)
     descartarCarritoInvitado()
     // Lo que hizo como invitado en esta sesión pasa a su usuario
     moveSessionEventsToUser(activeUser.email)

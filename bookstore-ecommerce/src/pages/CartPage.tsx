@@ -4,8 +4,11 @@ import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { CartItemRow } from "../features/carrito-de-compras/CartItemRow"
+import { itemKey } from "../features/carrito-de-compras/CartReducer"
 import { CartSummary } from "../features/carrito-de-compras/CartSummary"
 import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
+import { CartIssues } from "../features/carrito-de-compras/CartIssues"
+import { useCartValidation } from "../features/carrito-de-compras/useCartValidation"
 
 /**
  * Página del carrito: lista de libros y resumen de compra.
@@ -13,6 +16,8 @@ import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
 export default function CartPage() {
   const { items, totals, clearCart } = useCart()
   const [confirmarVaciar, setConfirmarVaciar] = useState(false)
+  // Mínimo B2B y stock de la sucursal: si algo no se cumple no se puede ir al checkout
+  const { problemas, puedeContinuar } = useCartValidation()
 
   const unidades = totals.totalUnidades
 
@@ -77,7 +82,7 @@ export default function CartPage() {
 
               <ul className="cart-rows">
                 {items.map((item) => (
-                  <CartItemRow key={item.id} item={item} />
+                  <CartItemRow key={itemKey(item)} item={item} />
                 ))}
               </ul>
 
@@ -87,9 +92,17 @@ export default function CartPage() {
             </section>
 
             <CartSummary>
-              <Link to="/checkout" className="checkout-btn checkout-btn--block">
-                Continuar al checkout
-              </Link>
+              <CartIssues problemas={problemas} />
+
+              {puedeContinuar ? (
+                <Link to="/checkout" className="checkout-btn checkout-btn--block">
+                  Continuar al checkout
+                </Link>
+              ) : (
+                <button type="button" className="checkout-btn checkout-btn--block" disabled>
+                  Continuar al checkout
+                </button>
+              )}
             </CartSummary>
           </div>
         )}

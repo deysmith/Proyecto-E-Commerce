@@ -3,7 +3,9 @@ import { getItemSubtotal, type CartTotals } from "../carrito-de-compras/CartCalc
 import type { DatosComprador, DatosEntrega } from "../checkout/CheckoutTypes"
 import { nombreCanton, nombreDistrito, nombreProvincia } from "../checkout/CheckoutLocations"
 import { VERSION_LEGAL } from "../legal/InfoTienda"
+import { listaPreciosDe, type TipoCliente } from "./OrderCustomer"
 import type { EntregaOrden, Orden, ProductoOrden } from "./OrderTypes"
+import type { Empresa } from "../session/empresa"
 
 /**
  * Construcción de la orden a partir de lo que hay en el checkout y en el carrito.
@@ -66,11 +68,17 @@ export function productoParaOrden(item: CartItem): ProductoOrden {
     cantidad: item.quantity,
     subtotal: getItemSubtotal(item),
     imagen: item.image,
+    sucursal: item.sucursal,
   }
 }
 
 interface DatosParaOrden {
   numero: string
+  usuarioId?: string
+  // Identificador del cliente (correo o id de invitado) y su tipo
+  clienteId: string
+  tipoCliente: TipoCliente
+  empresa: Empresa | null
   items: CartItem[]
   // Los totales que ya calculó el carrito
   totales: CartTotals
@@ -84,11 +92,17 @@ interface DatosParaOrden {
  * Arma la orden. Siempre nace con estado "pendiente" y pago "pendiente": todavía no se ha intentado cobrar nada.
  * La aceptación de los términos se registra aquí, con su fecha y la versión de los documentos que se aceptaron.
  */
-export function construirOrden({ numero, items, totales, comprador, entrega, terminosAceptados }: DatosParaOrden): Orden {
+export function construirOrden({ numero, usuarioId, clienteId, tipoCliente, empresa, items, totales, comprador, entrega, terminosAceptados }: DatosParaOrden): Orden {
   const ahora = new Date().toISOString()
 
   return {
     numero,
+    usuarioId,
+    clienteId,
+    tipoCliente,
+    // Solo el cliente B2B compra con precios mayoristas; B2C e invitados usan la lista B2C
+    listaPrecios: listaPreciosDe(tipoCliente),
+    empresa: tipoCliente === "BUSINESS" ? empresa : null,
     fecha: ahora,
     comprador: {
       nombreCompleto: comprador.nombreCompleto.trim(),

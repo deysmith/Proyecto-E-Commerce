@@ -1,4 +1,6 @@
 import type { DatosComprador } from "../checkout/CheckoutTypes"
+import type { TipoCliente } from "./OrderCustomer"
+import type { Empresa } from "../session/empresa"
 
 export type EstadoOrden = "pendiente" | "confirmada" | "fallida"
 export type EstadoPago = "pendiente" | "aprobado" | "rechazado" | "error"
@@ -29,6 +31,8 @@ export interface ProductoOrden {
   cantidad: number
   subtotal: number
   imagen?: string
+  // Sucursal desde la que se pidió el libro (opcional: las órdenes anteriores no la tienen)
+  sucursal?: string
 }
 
 /**
@@ -57,7 +61,16 @@ export interface MontosOrden {
 export interface Orden {
   // Número único que ve el usuario
   numero: string
+  usuarioId?: string
+  // A quién pertenece la orden: el correo del usuario con sesión o el id de invitado (guest-...).
+  // Es el campo por el que se filtran las órdenes de una persona. Opcional porque las órdenes antiguas no lo tienen.
+  clienteId?: string
+  tipoCliente?: TipoCliente
+  // Lista de precios con la que se hizo la compra. Los precios de "productos" ya son los de esta lista.
+  listaPrecios?: "B2C" | "B2B"
   // Fecha y hora de creación en formato ISO (ej. 2026-10-11T23:50:00.000Z)
+  // Empresa a cuyo nombre se hizo la compra (solo clientes B2B). Opcional porque las órdenes anteriores no la tienen
+  empresa?: Empresa | null
   fecha: string
   comprador: DatosComprador
   entrega: EntregaOrden

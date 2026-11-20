@@ -5,6 +5,9 @@ import type { CartItem } from "./CartReducer"
 import { formatPrice } from "../../utils/formatPrice"
 import { MinusIcon, PlusIcon, TrashIcon } from "./CartIcons"
 import { useState } from "react"
+import { useSession } from "../session/sessionContext"
+import { nombreSucursal } from "../sucursales/Sucursales"
+import { getMinimoB2B, getStockItem, validarItem } from "./CartValidation"
 
 interface CartItemRowProps {
   item: CartItem
@@ -16,11 +19,20 @@ interface CartItemRowProps {
  */
 export function CartItemRow({ item }: CartItemRowProps) {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart()
+  const { user } = useSession()
   const [confirmarEliminar, setConfirmarEliminar] = useState(false)
   const subtotal = getItemSubtotal(item)
 
+  // Stock en la sucursal que se eligió al agregar el libro (null si el carrito es anterior a esta función y no se conoce)
+  const nombreDeSucursal = item.sucursal ? nombreSucursal(item.sucursal) : ""
+  const stock = getStockItem(item)
+  const minimoB2B = getMinimoB2B(item, user?.role)
+  // El agotado ya se informa en la línea de stock, así que aquí solo se muestran los demás motivos
+  const problemas = validarItem(item, user?.role).filter((problema) => problema.tipo !== "agotado")
+  const llegoAlStock = stock !== null && item.quantity >= stock
+
   function eliminarProducto() {
-    removeItem(item.id)
+    removeItem(item)
     setConfirmarEliminar(false)
   }
 
@@ -37,7 +49,28 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <p className="cart-row__author">{item.author}</p>
         <p className="cart-row__unit">
           Precio unitario <span>{formatPrice(item.price)}</span>
+          {user?.role === "BUSINESS" && <small> (precio mayorista B2B)</small>}
         </p>
+
+        {minimoB2B !== null && (
+          <p className="cart-row__min">Cantidad mínima B2B: {minimoB2B}</p>
+        )}
+
+        {item.sucursal && (
+          <p className="cart-row__branch">Sucursal: <strong>{nombreDeSucursal}</strong></p>
+        )}
+
+        {stock !== null && (
+          <p className={stock === 0 ? "cart-row__stock is-out" : "cart-row__stock"}>
+            {stock === 0
+              ? `Agotado en ${nombreDeSucursal}`
+              : `Disponibles en ${nombreDeSucursal}: ${stock}`}
+          </p>
+        )}
+
+        {problemas.map((problema) => (
+          <p key={problema.tipo} className="cart-row__issue">{problema.detalle}</p>
+        ))}
 
         {confirmarEliminar ? (
           <div className="cart-clear">
@@ -77,7 +110,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           {/* En 1 se deshabilita: para quitar el libro se usa "Eliminar" */}
           <button
             type="button"
-            onClick={() => decreaseQuantity(item.id)}
+            onClick={() => decreaseQuantity(item)}
             disabled={item.quantity === 1}
             aria-label="Disminuir cantidad"
             title={item.quantity === 1 ? "Usa Eliminar para quitar el libro" : undefined}
@@ -93,7 +126,9 @@ export function CartItemRow({ item }: CartItemRowProps) {
           <button
             type="button"
             onClick={() => increaseQuantity(item)}
+            disabled={llegoAlStock}
             aria-label="Aumentar cantidad"
+            title={llegoAlStock ? `Es todo lo que hay en ${nombreDeSucursal}` : undefined}
           >
             <PlusIcon />
           </button>

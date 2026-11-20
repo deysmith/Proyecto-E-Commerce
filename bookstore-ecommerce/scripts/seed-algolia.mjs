@@ -63,7 +63,10 @@ async function indexarEnAlgolia(productos) {
 }
 
 /**
- * Creación de los indices de los usuarios, los roles de estos son: ADMIN, CUSTOMER y BUSINESS
+ * Creación de los indices de los usuarios, los roles de estos son: ADMIN, CUSTOMER y BUSINESS.
+ * Los clientes BUSINESS incluyen los datos de su empresa (nombre y cédula jurídica).
+ * Se usa replaceAllObjects para reemplazar todos los usuarios: así no quedan registros viejos duplicados.
+ * El objectID de cada usuario es su correo.
  */
 async function crearIndiceUsuarios() {
   const data = fs.readFileSync("data/users.json", "utf-8");
@@ -79,7 +82,7 @@ async function crearIndiceUsuarios() {
     }
   });
 
-  await client.saveObjects({
+  await client.replaceAllObjects({
     indexName: INDEX_NAME_USERS,
     objects: usuarios
   });
@@ -93,9 +96,14 @@ async function crearIndiceOrdenes() {
       searchableAttributes: [
         "numero",
         "comprador.nombreCompleto",
-        "comprador.correo"
+        "comprador.correo",
+        "empresa.nombre"
       ],
       attributesForFaceting: [
+        //clienteId (correo o id de invitado) permite traer solo las órdenes de una persona.
+        //filterOnly: sirve para filtrar pero no se muestra como faceta
+        "filterOnly(clienteId)",
+        "tipoCliente",
         "estadoOrden",
         "estadoPago",
         "fecha",
@@ -105,19 +113,8 @@ async function crearIndiceOrdenes() {
   });
 }
 
-export async function registrarOrden(orden) {
-  const ordenAlgolia = {
-    ...orden,
-    ObjectID: orden.numero
-  };
-
-  await client.saveObject({
-    indexName: INDEX_NAME_ORDERS,
-    body: ordenAlgolia
-  });
-}
-
 async function main() {
+  await crearIndiceUsuarios();
   await crearIndiceOrdenes();
 }
 
