@@ -5,6 +5,7 @@ import type { CartItem } from "./CartReducer"
 import { formatPrice } from "../../utils/formatPrice"
 import { MinusIcon, PlusIcon, TrashIcon } from "./CartIcons"
 import { useState } from "react"
+import { useSession } from "../session/sessionContext"
 
 interface CartItemRowProps {
   item: CartItem
@@ -16,6 +17,7 @@ interface CartItemRowProps {
  */
 export function CartItemRow({ item }: CartItemRowProps) {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart()
+  const { user } = useSession()
   const [confirmarEliminar, setConfirmarEliminar] = useState(false)
   const subtotal = getItemSubtotal(item)
 
@@ -37,6 +39,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <p className="cart-row__author">{item.author}</p>
         <p className="cart-row__unit">
           Precio unitario <span>{formatPrice(item.price)}</span>
+          {user?.role === "BUSINESS" && <small> (precio mayorista B2B)</small>}
         </p>
 
         {confirmarEliminar ? (

@@ -4,6 +4,9 @@ import { formatPrice } from "../../utils/formatPrice"
 import { useTranslation } from "react-i18next"
 import { handleAddToCart } from "../../utils/handleAddToCart"
 import { useCart } from "../carrito-de-compras/useCart"
+import { useSession } from "../session/sessionContext"
+import { getPrecioLibro } from "../../utils/segmentarUsuarios"
+import { tieneStock } from "../../utils/validarStock"
 
 /**
  * Las propiedades necesarias para el componente ProductCard
@@ -23,6 +26,7 @@ interface ProductCardProps {
 export function ProductCard({ hit }: ProductCardProps) {
   const { t } = useTranslation()
   const { addItem } = useCart()
+  const { user } = useSession()
   
   return (
     <Link to={`/producto/${hit.objectID}`} className="product-card">
@@ -52,17 +56,29 @@ export function ProductCard({ hit }: ProductCardProps) {
             </p>
 
             <strong>
-              {formatPrice(hit.pricing.price_crc)}
+              {formatPrice(getPrecioLibro(hit, user?.role))}
             </strong>
           </div>
 
-          <button
-            type="button"
-            className="product-card__add"
-            onClick={(event) => handleAddToCart(event, hit, addItem)}
-          >
-            Agregar al carrito
-          </button>
+
+          {user?.role !== "ADMIN" && (tieneStock(hit) ? (
+            <button
+              type="button"
+              className="product-card__add"
+              onClick={(event) => handleAddToCart(event, hit, addItem)}
+            >
+              Agregar al carrito
+            </button>
+          ) : (
+              <button 
+                type="button"
+                className="product-card__add" 
+                disabled
+              >
+                Agotado
+              </button>
+            ) 
+          )}
         </div>
 
         {/* <div className="product-card__face product-card__face--back">

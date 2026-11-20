@@ -7,6 +7,7 @@ import { CARRITO_INVITADO, loadCart, saveCart } from "./CartStorage"
 import { CartNotification } from "./CartNotification"
 import { useAnalytics } from "../analytics/analyticsContext"
 import { useSession } from "../session/sessionContext"
+import { getPrecioLibro } from "../../utils/segmentarUsuarios"
 
 /**
  * Proveedor del estado global del carrito (Context API + useReducer).
@@ -42,7 +43,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [notification])
 
   function addItem(product: ProductRecord) {
-    dispatch({ type: "ADD_ITEM", product })
+    // El precio se decide aquí, que es donde se conoce al usuario: B2B paga el mayorista, el resto el precio B2C
+    dispatch({ type: "ADD_ITEM", product, price: getPrecioLibro(product, user?.role) })
     // Cada clic en "Agregar al carrito" suma una unidad
     registrarEvento("add_to_cart", {
       productId: product.objectID,

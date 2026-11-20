@@ -11,6 +11,9 @@ import { useCart } from "../features/carrito-de-compras/useCart"
 import { handleAddToCart } from "../utils/handleAddToCart"
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { addRecentProduct } from "../utils/recentProducts"
+import { useSession } from "../features/session/sessionContext"
+import { getPrecioLibro } from "../utils/segmentarUsuarios"
+import { tieneStock } from "../utils/validarStock"
 
 
 /**
@@ -21,6 +24,9 @@ export default function DetailPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const { user } = useSession()
+
+  const puedeVerInfoEmpresas = user?.role === "BUSINESS" || user?.role === "ADMIN"
 
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [loading, setLoading] = useState(true)
@@ -96,13 +102,26 @@ export default function DetailPage() {
                   src={product.productInfo.image_url}
                   alt={`Portada de ${product.productInfo.title}`}
                 />
-                <button
-                  type="button"
-                  className="product-detail__add"
-                  onClick={(event) => handleAddToCart(event, product, addItem)}
-                >
-                  Agregar al carrito
-                </button>
+                {/* El administrador consulta el catálogo pero no compra */}
+                {user?.role !== "ADMIN" && (tieneStock(product) ? (
+                  <button
+                    type="button"
+                    className="product-detail__add"
+                    onClick={(event) => handleAddToCart(event, product, addItem)}
+                  >
+                    Agregar al carrito
+                  </button>
+                ) : (
+                    <button 
+                      type="button"
+                      className="product-detail__add"
+                      disabled
+                    >
+                      Agotado
+                    </button>
+                  ) 
+                )}
+
               </div>
 
               <div className="detail-info">
@@ -123,7 +142,7 @@ export default function DetailPage() {
 
                 <div className="detail-price-section">
                   <strong className="detail-price">
-                    {formatPrice(product.pricing.price_crc)}
+                    {formatPrice(getPrecioLibro(product, user?.role))}
                   </strong>
 
                   {product.pricing.discount > 0 && (
@@ -209,18 +228,19 @@ export default function DetailPage() {
                   <h2>Disponibilidad</h2>
 
                   <p className={
-                    product.inventory.in_stock
+                    tieneStock(product)
                       ? "stock-available"
                       : "stock-unavailable"
                   }>
-                    {product.inventory.in_stock
+                    {tieneStock(product)
                       ? "Disponible"
                       : "Agotado"}
                   </p>
 
                   {product.inventory.in_stock && (
+                    <>
                     <div className="detail-stock">
-
+                      
                       <span>
                         <strong>San José: </strong>{" "}
                         {product.inventory.stock_by_branch["san-jose"]}
@@ -237,33 +257,38 @@ export default function DetailPage() {
                       </span>
 
                     </div>
+                    </>
                   )}
                 </div>
 
-                <div className="detail-section detail-b2b">
-                  <h2>Información para empresas</h2>
+                {puedeVerInfoEmpresas && (
+                  <div className="detail-section detail-b2b">
+                    <h2>Información para empresas</h2>
 
-                  <div className="detail-meta">
+                    <div className="detail-meta">
 
-                    <span>
-                      <strong>Precio mayorista:</strong>{" "}
-                      {formatPrice(
-                        product.b2b.wholesale_price_crc
-                      )}
-                    </span>
+                    {user?.role === "ADMIN" && (
+                      <span>
+                        <strong>Precio mayorista:</strong>{" "}
+                        {formatPrice(
+                          product.b2b.wholesale_price_crc
+                        )}
+                      </span>
+                    )}
 
-                    <span>
-                      <strong>Cantidad mínima:</strong>{" "}
-                      {product.b2b.min_order_quantity}
-                    </span>
+                      <span>
+                        <strong>Cantidad mínima:</strong>{" "}
+                        {product.b2b.min_order_quantity}
+                      </span>
 
-                    <span>
-                      <strong>Descuento por volumen:</strong>{" "}
-                      {product.b2b.volume_discount_pct}%
-                    </span>
+                      <span>
+                        <strong>Descuento por volumen:</strong>{" "}
+                        {product.b2b.volume_discount_pct}%
+                      </span>
 
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
             </div>

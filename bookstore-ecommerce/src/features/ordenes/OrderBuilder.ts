@@ -97,6 +97,8 @@ export function construirOrden({ numero, usuarioId, clienteId, tipoCliente, item
     usuarioId,
     clienteId,
     tipoCliente,
+    // Solo el cliente B2B compra con precios mayoristas; B2C e invitados usan la lista B2C
+    listaPrecios: tipoCliente === "BUSINESS" ? "B2B" : "B2C",
     fecha: ahora,
     comprador: {
       nombreCompleto: comprador.nombreCompleto.trim(),
