@@ -50,6 +50,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [notification])
 
   function requestAddItem(product: ProductRecord, cantidad = 1) {
+    if (getPrecioLibro(product, user?.role) === null) {
+      setNotification(`"${product.productInfo.title}" no se puede agregar porque su precio no está disponible en este momento.`)
+      return
+    }
     setCantidadPendiente(cantidad)
     setProductoPendiente(product)
   }
@@ -60,7 +64,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     if (stockDisponible < cantidad) return
     // El precio se decide aquí, que es donde se conoce al usuario: B2B paga el mayorista, el resto el precio B2C
-    dispatch({ type: "ADD_ITEM", product, price: getPrecioLibro(product, user?.role), sucursal, cantidad })
+    const precio = getPrecioLibro(product, user?.role)
+    if (precio === null) return
+    dispatch({ type: "ADD_ITEM", product, price: precio, sucursal, cantidad })
     // Cada clic en "Agregar al carrito" suma las unidades elegidas
     registrarEvento("add_to_cart", {
       productId: product.objectID,

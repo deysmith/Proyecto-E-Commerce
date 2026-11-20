@@ -12,7 +12,7 @@ import { handleAddToCart } from "../utils/handleAddToCart"
 import { useAnalytics } from "../features/analytics/analyticsContext"
 import { addRecentProduct } from "../utils/recentProducts"
 import { useSession } from "../features/session/sessionContext"
-import { getPrecioLibro } from "../utils/segmentarUsuarios"
+import { textoPrecioLibro } from "../utils/segmentarUsuarios"
 import { SUCURSALES, useInventarioActualizado } from "../features/sucursales/Sucursales"
 import { MinusIcon, PlusIcon } from "../features/carrito-de-compras/CartIcons"
 import { obtenerInventarioProducto } from "../services/inventoryServices"
@@ -215,7 +215,7 @@ export default function DetailPage() {
 
                 <div className="detail-price-section">
                   <strong className="detail-price">
-                    {formatPrice(getPrecioLibro(product, user?.role))}
+                    {textoPrecioLibro(product, user?.role)}
                   </strong>
 
                   {product.pricing.discount > 0 && (

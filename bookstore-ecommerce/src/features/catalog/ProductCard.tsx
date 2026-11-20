@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom"
 import type { ProductRecord } from "../../types/productRecord"
-import { formatPrice } from "../../utils/formatPrice"
 import { useTranslation } from "react-i18next"
 import { handleAddToCart } from "../../utils/handleAddToCart"
 import { useCart } from "../carrito-de-compras/useCart"
 import { useSession } from "../session/sessionContext"
-import { getPrecioLibro } from "../../utils/segmentarUsuarios"
+import { textoPrecioLibro } from "../../utils/segmentarUsuarios"
 import { obtenerInventarioProducto } from "../../services/inventoryServices"
 import { useInventarioActualizado } from "../sucursales/Sucursales"
 
@@ -60,7 +59,7 @@ export function ProductCard({ hit }: ProductCardProps) {
             </p>
 
             <strong>
-              {formatPrice(getPrecioLibro(hit, user?.role))}
+              {textoPrecioLibro(hit, user?.role)}
             </strong>
           </div>
 
