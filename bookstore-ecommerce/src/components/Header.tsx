@@ -1,9 +1,10 @@
 import type { MouseEvent } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { SearchBar } from "./SearchBar"
 import { CartPopUp } from "../features/carrito-de-compras/CartPopUp"
 import { useSession } from "../features/session/sessionContext"
 import { NOMBRE_ROL } from "../features/session/roles"
+import { MenuUsuario } from "./MenuUsuario"
 
 interface HeaderProps {
   esCheckout?: boolean
@@ -11,8 +12,7 @@ interface HeaderProps {
 }
 
 export function Header( { esCheckout, onSalir }: HeaderProps) {
-  const { user, signOut } = useSession()
-  const navigate = useNavigate()
+  const { user } = useSession()
   const location = useLocation()
 
   function alHacerClicEnLogo(evento: MouseEvent<HTMLAnchorElement>) {
@@ -41,35 +41,19 @@ export function Header( { esCheckout, onSalir }: HeaderProps) {
       )}
 
       <div className="header-account">
-        <Link to="/analytics" className="header-account__analytics">Analytics</Link>
-        {user?.role === "ADMIN" && (
-          <Link to="/admin" className="header-account__analytics">Panel administrativo</Link>
-        )}
-        {user?.role !== "ADMIN" && (
-          <Link to="/mis-ordenes" className="header-account__analytics">Mis órdenes</Link>
-        )}
+        {/* Usuario y rol de la sesión activa (en celular se ven dentro del menú) */}
         {user ? (
-          <>
-            {/* Usuario y rol de la sesión activa */}
-            <span className="header-account__usuario">
-              <strong>{user.name}</strong>
-              <span>{NOMBRE_ROL[user.role]}</span>
-            </span>
-            <button
-              type="button"
-              className="header-account__action"
-              onClick={() => {
-                signOut()
-                navigate("/login")
-              }}
-            >
-              Salir
-            </button>
-          </>
+          <span className="header-account__usuario">
+            <strong>{user.name}</strong>
+            <span>{NOMBRE_ROL[user.role]}</span>
+          </span>
         ) : (
           // Se guarda la página actual para volver a ella después de iniciar sesión
           <Link to="/login" state={{ from: location.pathname === "/login" ? "/" : location.pathname }} className="header-account__action">Ingresar</Link>
         )}
+
+        {/* En el checkout no se muestra el menú, para no salir de la compra por accidente */}
+        {!esCheckout && <MenuUsuario />}
       </div>
     </header>
   )
