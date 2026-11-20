@@ -60,7 +60,6 @@ export default function AdminProductos() {
                   <th scope="col" className="admin-tabla__numero">Precio B2C</th>
                   <th scope="col" className="admin-tabla__numero">Precio B2B</th>
                   <th scope="col" className="admin-tabla__numero">Mínimo B2B</th>
-                  <th scope="col" className="admin-tabla__numero">Desc. volumen</th>
                   <th scope="col" className="admin-tabla__numero">Existencias</th>
                   <th scope="col">Estado</th>
                 </tr>
@@ -77,7 +76,6 @@ export default function AdminProductos() {
                       <td className="admin-tabla__numero">{mostrarPrecio(producto.pricing?.price_crc)}</td>
                       <td className="admin-tabla__numero">{mostrarPrecio(producto.b2b?.wholesale_price_crc)}</td>
                       <td className="admin-tabla__numero">{producto.b2b?.min_order_quantity ?? "—"}</td>
-                      <td className="admin-tabla__numero">{producto.b2b?.volume_discount_pct ?? 0}%</td>
                       <td className="admin-tabla__numero">{existencias}</td>
                       <td>
                         {existencias > 0
