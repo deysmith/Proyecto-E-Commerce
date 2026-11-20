@@ -25,7 +25,7 @@ interface ProductCardProps {
  */
 export function ProductCard({ hit }: ProductCardProps) {
   const { t } = useTranslation()
-  const { addItem } = useCart()
+  const { requestAddItem } = useCart()
   const { user } = useSession()
   
   return (
@@ -65,7 +65,7 @@ export function ProductCard({ hit }: ProductCardProps) {
             <button
               type="button"
               className="product-card__add"
-              onClick={(event) => handleAddToCart(event, hit, addItem)}
+              onClick={(event) => handleAddToCart(event, hit, requestAddItem)}
             >
               Agregar al carrito
             </button>

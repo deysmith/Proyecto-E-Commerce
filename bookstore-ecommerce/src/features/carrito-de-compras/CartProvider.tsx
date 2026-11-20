@@ -8,6 +8,8 @@ import { CartNotification } from "./CartNotification"
 import { useAnalytics } from "../analytics/analyticsContext"
 import { useSession } from "../session/sessionContext"
 import { getPrecioLibro } from "../../utils/segmentarUsuarios"
+import { SelectorSucursal } from "../sucursales/SucursalSelector"
+import { getStockSucursal, nombreSucursal, type SucursalId } from "../sucursales/Sucursales"
 
 /**
  * Proveedor del estado global del carrito (Context API + useReducer).
@@ -27,6 +29,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
   const { registrarEvento } = useAnalytics()
   const [notification, setNotification] = useState<string | null>(null)
+  // Libro que espera a que el cliente elija la sucursal (null = ventana cerrada)
+  const [productoPendiente, setProductoPendiente] = useState<ProductRecord | null>(null)
+  // Unidades que se van a agregar cuando el cliente elija la sucursal
+  const [cantidadPendiente, setCantidadPendiente] = useState(1)
 
   // Cada vez que cambian los productos se guarda el carrito de su dueño
   useEffect(() => {
@@ -42,21 +48,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer)
   }, [notification])
 
-  function addItem(product: ProductRecord) {
+  function requestAddItem(product: ProductRecord, cantidad = 1) {
+    setCantidadPendiente(cantidad)
+    setProductoPendiente(product)
+  }
+
+  function addItem(product: ProductRecord, sucursal: SucursalId, cantidad = 1) {
+    // Sin existencias suficientes en esa sucursal no se agrega
+    if ((getStockSucursal(product.inventory.stock_by_branch, sucursal) ?? 0) < cantidad) return
+
     // El precio se decide aquí, que es donde se conoce al usuario: B2B paga el mayorista, el resto el precio B2C
-    dispatch({ type: "ADD_ITEM", product, price: getPrecioLibro(product, user?.role) })
-    // Cada clic en "Agregar al carrito" suma una unidad
+    dispatch({ type: "ADD_ITEM", product, price: getPrecioLibro(product, user?.role), sucursal, cantidad })
+    // Cada clic en "Agregar al carrito" suma las unidades elegidas
     registrarEvento("add_to_cart", {
       productId: product.objectID,
       title: product.productInfo.title,
       category: product.facets.category,
-      quantity: 1,
+      quantity: cantidad,
     })
-    setNotification(`"${product.productInfo.title}" se agregó al carrito`)
+    setNotification(
+      cantidad > 1
+        ? `${cantidad} unidades de "${product.productInfo.title}" se agregaron al carrito (sucursal ${nombreSucursal(sucursal)})`
+        : `"${product.productInfo.title}" se agregó al carrito (sucursal ${nombreSucursal(sucursal)})`
+    )
+  }
+
+  function confirmarSucursal(sucursal: SucursalId) {
+    if (productoPendiente) addItem(productoPendiente, sucursal, cantidadPendiente)
+    setProductoPendiente(null)
   }
 
   function increaseQuantity(item: CartItem) {
-    dispatch({ type: "INCREASE", id: item.id })
+    dispatch({ type: "INCREASE", id: item.id, sucursal: item.sucursal })
     registrarEvento("add_to_cart", {
       productId: item.id,
       title: item.title,
@@ -64,12 +87,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  function decreaseQuantity(id: string) {
-    dispatch({ type: "DECREASE", id })
+  function decreaseQuantity(item: CartItem) {
+    dispatch({ type: "DECREASE", id: item.id, sucursal: item.sucursal })
   }
 
-  function removeItem(id: string) {
-    dispatch({ type: "REMOVE", id })
+  function removeItem(item: CartItem) {
+    dispatch({ type: "REMOVE", id: item.id, sucursal: item.sucursal })
   }
 
   // Se va a usar en el Proyecto 2 cuando el pago sea aprobado
@@ -89,6 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items: state.items,
         totals,
         addItem,
+        requestAddItem,
         increaseQuantity,
         decreaseQuantity,
         removeItem,
@@ -99,6 +123,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <CartNotification message={notification} onClose={closeNotification} />
+      <SelectorSucursal
+        producto={productoPendiente}
+        cantidad={cantidadPendiente}
+        minimoB2B={user?.role === "BUSINESS" ? productoPendiente?.b2b?.min_order_quantity : null}
+        onConfirmar={confirmarSucursal}
+        onCancelar={() => setProductoPendiente(null)}
+      />
     </CartContext.Provider>
   )
 }

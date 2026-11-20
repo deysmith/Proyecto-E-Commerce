@@ -5,6 +5,8 @@ import { Footer } from "../components/Footer"
 import { useCart } from "../features/carrito-de-compras/useCart"
 import { CartSummary } from "../features/carrito-de-compras/CartSummary"
 import { CartEmpty } from "../features/carrito-de-compras/CartEmpty"
+import { CartIssues } from "../features/carrito-de-compras/CartIssues"
+import { useCartValidation } from "../features/carrito-de-compras/useCartValidation"
 import { CheckoutSteps } from "../features/checkout/CheckoutSteps"
 import { BuyerForm } from "../features/checkout/BuyerForm"
 import { DeliveryForm } from "../features/checkout/DeliveryForm"
@@ -31,6 +33,8 @@ const PASOS = ["Comprador", "Entrega", "Resumen", "Pago"]
 export default function CheckoutPage() {
   const { items, totals, clearCart } = useCart()
   const { user } = useSession()
+  // Mínimo B2B y stock de la sucursal: también se revisa aquí para que no se pueda entrar escribiendo /checkout
+  const { problemas, puedeContinuar } = useCartValidation()
   const navigate = useNavigate()
   const [paso, setPaso] = useState(0)
   const [comprador, setComprador] = useState<DatosComprador>(compradorVacio)
@@ -51,13 +55,13 @@ export default function CheckoutPage() {
   const { registrarEvento } = useAnalytics()
 
   useEffect(() => {
-    if (items.length === 0 || checkoutTracked.current) return
+    if (items.length === 0 || !puedeContinuar || checkoutTracked.current) return
     checkoutTracked.current = true
     registrarEvento("checkout_start", {
       productCount: items.length,
       quantity: items.reduce((total, item) => total + item.quantity, 0),
     })
-  }, [items, registrarEvento])
+  }, [items, puedeContinuar, registrarEvento])
 
   function irAPaso(nuevoPaso: number) {
     setPaso(nuevoPaso)
@@ -170,6 +174,35 @@ export default function CheckoutPage() {
           </nav>
 
           <CartEmpty texto="Para iniciar el checkout necesitas al menos un libro en tu carrito. Agrega alguno desde el catálogo y vuelve aquí para completar tu compra." />
+        </main>
+
+        <Footer />
+      </div>
+    )
+  }
+
+  // Si algún libro incumple el mínimo B2B o no hay stock en la sucursal, no se entra al checkout.
+  // Excepción: cuando la orden se acaba de confirmar, el carrito se vacía a propósito.
+  if (!puedeContinuar && orden?.estadoOrden !== "confirmada") {
+    return (
+      <div className="catalog-shell">
+        <Header />
+
+        <main className="cart-page">
+          <nav className="cart-breadcrumb" aria-label="Ruta de navegación">
+            <Link to="/">Catálogo</Link>
+            <span aria-hidden="true">/</span>
+            <Link to="/cart">Carrito</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">Checkout</span>
+          </nav>
+
+          <section className="cart-empty cart-blocked">
+            <h2>Revisa tu carrito antes de continuar</h2>
+            <p>Para iniciar el checkout corrige lo siguiente en tu carrito.</p>
+            <CartIssues problemas={problemas} />
+            <Link to="/cart" className="cart-empty__button">Volver al carrito</Link>
+          </section>
         </main>
 
         <Footer />

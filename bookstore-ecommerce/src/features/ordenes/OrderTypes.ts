@@ -30,6 +30,8 @@ export interface ProductoOrden {
   cantidad: number
   subtotal: number
   imagen?: string
+  // Sucursal desde la que se pidió el libro (opcional: las órdenes anteriores no la tienen)
+  sucursal?: string
 }
 
 /**

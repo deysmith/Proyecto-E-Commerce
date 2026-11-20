@@ -215,3 +215,30 @@
   .cart-popup__list { padding-right: 16px; padding-left: 16px; max-height: min(300px, 35dvh); }
   .cart-popup__footer { padding: 16px 18px 18px; }
 }
+
+/* Validación del carrito: mínimo B2B y stock por sucursal */
+.cart-row__min, .cart-row__stock, .cart-row__branch { margin: 6px 0 0; color: var(--color-text-muted); font-size: 12px; }
+.cart-row__stock.is-out { color: #8e3823; font-weight: 700; }
+.cart-row__issue { margin: 6px 0 0; color: #b34b30; font-size: 12.5px; font-weight: 600; }
+.cart-stepper button:disabled { opacity: .45; cursor: not-allowed; }
+.cart-popup__list .cart-row__min, .cart-popup__list .cart-row__stock, .cart-popup__list .cart-row__branch, .cart-popup__list .cart-row__issue { margin-top: 4px; font-size: 11px; }
+.cart-issues { margin: 18px 0 0; padding: 12px 14px; border: 1px solid #b34b30; border-left-width: 4px; border-radius: 12px; background: #f6e9e4; color: #8e3823; font-size: 13px; line-height: 1.5; }
+.cart-issues strong { display: block; margin-bottom: 6px; }
+.cart-issues ul { margin: 0; padding-left: 18px; }
+.cart-issues li + li { margin-top: 6px; }
+.cart-blocked .cart-issues { max-width: 560px; margin: 18px auto 24px; text-align: left; }
+
+.sucursal-caja { max-width: 480px; text-align: left; }
+.sucursal-caja .salida-caja__titulo, .sucursal-caja .salida-caja__texto { text-align: center; }
+.sucursal-caja .salida-caja__texto { max-width: none; margin-bottom: 18px; }
+.sucursal-caja__min { margin: -6px 0 16px; padding: 8px 12px; border-radius: 10px; background: rgba(228, 152, 30, 0.14); color: var(--color-primary); font-size: 13px; text-align: center; }
+.sucursal-opciones { display: grid; gap: 10px; margin: 0 0 24px; padding: 0; border: 0; }
+.sucursal-opciones__leyenda { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sucursal-opcion { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-bg); color: var(--color-primary); cursor: pointer; }
+.sucursal-opcion.is-selected { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
+.sucursal-opcion.is-out { opacity: .6; cursor: not-allowed; }
+.sucursal-opcion input { accent-color: var(--color-primary); }
+.sucursal-opcion__nombre { font-weight: 700; font-size: 14px; }
+.sucursal-opcion__stock { color: var(--color-text-muted); font-size: 13px; }
+.sucursal-opcion.is-out .sucursal-opcion__stock { color: #8e3823; font-weight: 700; }
+.sucursal-caja__aviso { margin: -10px 0 18px; color: #b34b30; font-size: 13px; font-weight: 600; text-align: center; }

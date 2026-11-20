@@ -3,6 +3,7 @@ import { getItemSubtotal, type CartTotals } from "../carrito-de-compras/CartCalc
 import type { DatosComprador, DatosEntrega } from "../checkout/CheckoutTypes"
 import { nombreCanton, nombreDistrito, nombreProvincia } from "../checkout/CheckoutLocations"
 import { VERSION_LEGAL } from "../legal/InfoTienda"
+import { nombreSucursal } from "../sucursales/Sucursales"
 import type { TipoCliente } from "./OrderCustomer"
 import type { EntregaOrden, Orden, ProductoOrden } from "./OrderTypes"
 
@@ -67,6 +68,7 @@ export function productoParaOrden(item: CartItem): ProductoOrden {
     cantidad: item.quantity,
     subtotal: getItemSubtotal(item),
     imagen: item.image,
+    sucursal: item.sucursal ? nombreSucursal(item.sucursal) : undefined,
   }
 }
 
