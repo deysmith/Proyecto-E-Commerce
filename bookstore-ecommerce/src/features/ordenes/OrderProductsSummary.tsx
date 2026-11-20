@@ -1,5 +1,6 @@
 import { formatPrice } from "../../utils/formatPrice"
 import type { MontosOrden, ProductoOrden } from "./OrderTypes"
+import { esSucursalValida, nombreSucursal } from "../sucursales/Sucursales"
 
 interface OrderProductsSummaryProps {
   productos: ProductoOrden[]
@@ -25,7 +26,7 @@ export function OrderProductsSummary({ productos, montos }: OrderProductsSummary
 
       <ul className="checkout-review__items">
         {productos.map((producto) => (
-          <li key={producto.id} className="checkout-review__item">
+          <li key={`${producto.id}-${producto.sucursal ?? ""}`} className="checkout-review__item">
             <span className="cart-book checkout-review__cover" aria-hidden="true">
               {producto.imagen && <img src={producto.imagen} alt="" loading="lazy" />}
             </span>
@@ -33,6 +34,9 @@ export function OrderProductsSummary({ productos, montos }: OrderProductsSummary
             <div className="checkout-review__info">
               <strong className="checkout-review__title">{producto.titulo}</strong>
               <span className="checkout-review__author">{producto.autor}</span>
+              {esSucursalValida(producto.sucursal) && (
+                <span className="checkout-review__sucursal">Sucursal: {nombreSucursal(producto.sucursal)}</span>
+              )}
             </div>
 
             <div className="checkout-review__figures">

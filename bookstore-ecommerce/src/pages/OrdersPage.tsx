@@ -6,6 +6,7 @@ import { useSession } from "../features/session/sessionContext"
 import { identidadDeCliente } from "../features/ordenes/OrderCustomer"
 import { EstadoOrdenChip, EstadoPagoChip } from "../features/ordenes/EstadoChips"
 import { OrderProductsSummary } from "../features/ordenes/OrderProductsSummary"
+import { OrderCondiciones } from "../features/ordenes/OrderCondiciones"
 import { consultarOrdenesDelCliente } from "../services/ordersService"
 import type { OrdenesDelCliente } from "../services/ordersService"
 import { formatDate } from "../utils/formatDate"
@@ -74,6 +75,7 @@ function ListaOrdenes({ clienteId, esInvitado }: OrdersPageProps) {
 
               <details className="orders-item__details">
                 <summary>Ver detalle ({orden.productos.length} {orden.productos.length === 1 ? "libro" : "libros"})</summary>
+                <OrderCondiciones tipoCliente={orden.tipoCliente} listaPrecios={orden.listaPrecios} />
                 <OrderProductsSummary productos={orden.productos} montos={orden.montos} />
               </details>
             </li>

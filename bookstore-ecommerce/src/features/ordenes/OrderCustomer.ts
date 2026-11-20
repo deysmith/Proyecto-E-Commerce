@@ -29,3 +29,11 @@ export function nombreTipoCliente(tipo?: TipoCliente): string {
   if (tipo) return NOMBRE_ROL[tipo]
   return "Sin registrar"
 }
+
+/**
+ * Lista de precios con la que compra cada tipo de cliente.
+ * Solo el cliente B2B usa precios mayoristas; B2C e invitados usan los precios B2C.
+ */
+export function listaPreciosDe(tipo?: TipoCliente): "B2C" | "B2B" {
+  return tipo === "BUSINESS" ? "B2B" : "B2C"
+}

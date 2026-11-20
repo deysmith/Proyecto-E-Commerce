@@ -3,7 +3,7 @@ import { getItemSubtotal, type CartTotals } from "../carrito-de-compras/CartCalc
 import type { DatosComprador, DatosEntrega } from "../checkout/CheckoutTypes"
 import { nombreCanton, nombreDistrito, nombreProvincia } from "../checkout/CheckoutLocations"
 import { VERSION_LEGAL } from "../legal/InfoTienda"
-import type { TipoCliente } from "./OrderCustomer"
+import { listaPreciosDe, type TipoCliente } from "./OrderCustomer"
 import type { EntregaOrden, Orden, ProductoOrden } from "./OrderTypes"
 import type { Empresa } from "../session/empresa"
 
@@ -101,7 +101,7 @@ export function construirOrden({ numero, usuarioId, clienteId, tipoCliente, empr
     clienteId,
     tipoCliente,
     // Solo el cliente B2B compra con precios mayoristas; B2C e invitados usan la lista B2C
-    listaPrecios: tipoCliente === "BUSINESS" ? "B2B" : "B2C",
+    listaPrecios: listaPreciosDe(tipoCliente),
     empresa: tipoCliente === "BUSINESS" ? empresa : null,
     fecha: ahora,
     comprador: {
