@@ -5,14 +5,20 @@ import { fetchProductById } from "./algoliaService"
 
 const INVENTARIO_STORAGE_KEY = "booksmart_inventory"
 
+const CAMBIOS_STORAGE_KEY = "booksmart_inventory_changes"
+
+// Límites para los cambios manuales del administrador
+export const STOCK_MAXIMO = 9999
+const MAXIMO_CAMBIOS_GUARDADOS = 20
+
 interface InventarioLocal {
   stock: Record<string, StockPorSucursal>
   ordenesProcesadas: string[]
 }
 
-const inventarioVacio: InventarioLocal = {
-  stock: {},
-  ordenesProcesadas: [],
+// Se crea uno nuevo cada vez, así nunca se modifica un objeto compartido por error
+function inventarioVacio(): InventarioLocal {
+  return { stock: {}, ordenesProcesadas: [] }
 }
 
 /**
@@ -22,13 +28,13 @@ function cargarInventario(): InventarioLocal {
   try {
     const datos = localStorage.getItem(INVENTARIO_STORAGE_KEY)
 
-    if (!datos) return inventarioVacio
+    if (!datos) return inventarioVacio()
 
     const inventario = JSON.parse(datos) as InventarioLocal
 
     return { stock: inventario.stock ?? {}, ordenesProcesadas: inventario.ordenesProcesadas ?? [] }
   } catch {
-    return inventarioVacio
+    return inventarioVacio()
   }
 }
 
@@ -185,4 +191,73 @@ export function obtenerInventarioProducto(productoId: string, stockOriginal: Sto
   }
 
   return resultado
+}
+
+
+/**
+ * Un cambio manual de inventario hecho por el administrador (operación administrativa simulada).
+ */
+export interface CambioInventario {
+  productoId: string
+  titulo: string
+  sucursal: SucursalId
+  anterior: number
+  nuevo: number
+  // Correo del administrador que hizo el cambio
+  admin: string
+  fecha: string
+}
+
+/**
+ * Historial de cambios manuales, del más reciente al más antiguo.
+ */
+export function obtenerCambiosInventario(): CambioInventario[] {
+  try {
+    const datos = localStorage.getItem(CAMBIOS_STORAGE_KEY)
+    if (!datos) return []
+
+    const cambios = JSON.parse(datos)
+    return Array.isArray(cambios) ? cambios : []
+  } catch {
+    return []
+  }
+}
+
+interface DatosCambioStock {
+  productoId: string
+  titulo: string
+  stockOriginal: StockPorSucursal
+  sucursal: SucursalId
+  nuevo: number
+  admin: string
+}
+
+/**
+ * Operación administrativa simulada: cambia las existencias de un libro en una sucursal.
+ * El índice de Algolia no se modifica: el nuevo valor se guarda en el inventario local, que tiene prioridad
+ * sobre Algolia en toda la tienda (catálogo, detalle, carrito y checkout).
+ * Devuelve el cambio registrado, o null si la cantidad no es válida o no se pudo guardar.
+ */
+export function actualizarStockManual({ productoId, titulo, stockOriginal, sucursal, nuevo, admin }: DatosCambioStock): CambioInventario | null {
+  if (!Number.isInteger(nuevo) || nuevo < 0 || nuevo > STOCK_MAXIMO) return null
+
+  const anterior = obtenerStockDisponible(productoId, stockOriginal, sucursal) ?? 0
+  const inventario = cargarInventario()
+
+  inventario.stock[productoId] ??= {}
+  inventario.stock[productoId][sucursal] = nuevo
+
+  if (!guardarInventario(inventario)) return null
+
+  const cambio: CambioInventario = { productoId, titulo, sucursal, anterior, nuevo, admin, fecha: new Date().toISOString() }
+
+  try {
+    const cambios = [cambio, ...obtenerCambiosInventario()].slice(0, MAXIMO_CAMBIOS_GUARDADOS)
+    localStorage.setItem(CAMBIOS_STORAGE_KEY, JSON.stringify(cambios))
+  } catch {
+    // Sin espacio en localStorage: solo se pierde el historial
+  }
+
+  window.dispatchEvent(new Event("booksmart_inventory_updated"))
+  return cambio
 }

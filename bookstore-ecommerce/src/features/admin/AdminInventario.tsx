@@ -1,10 +1,14 @@
+import { useState } from "react"
 import { AdminSeccion } from "./AdminSeccion"
 import { AdminError } from "./AdminError"
 import { AdminPaginacion } from "./AdminPaginacion"
 import { AdminLibro } from "./AdminLibro"
 import { useProductosAdmin } from "./useProductosAdmin"
-import { obtenerInventarioProducto } from "../../services/inventoryServices"
-import { SUCURSALES, useInventarioActualizado } from "../sucursales/Sucursales"
+import { AdminEditarStock } from "./AdminEditarStock"
+import { obtenerCambiosInventario, obtenerInventarioProducto, type CambioInventario } from "../../services/inventoryServices"
+import { SUCURSALES, nombreSucursal, useInventarioActualizado } from "../sucursales/Sucursales"
+import type { ProductRecord } from "../../types/productRecord"
+import { formatDate } from "../../utils/formatDate"
 
 // A partir de esta cantidad o menos se marca la existencia como baja
 const STOCK_BAJO = 5
@@ -18,13 +22,35 @@ function claseStock(stock: number) {
 /**
  * Sección "Inventario" del panel: existencias de cada libro en cada sucursal.
  * Usa el inventario actualizado (Algolia + los descuentos de las compras guardados en este navegador).
+ * Desde aquí el administrador hace la operación simulada: modificar las existencias de un libro en una sucursal.
  */
 export default function AdminInventario() {
   const { texto, buscar, pagina, setPagina, datos, cargando, reintentar } = useProductosAdmin()
   useInventarioActualizado()
+  const [editando, setEditando] = useState<ProductRecord | null>(null)
+  const [ultimoCambio, setUltimoCambio] = useState<CambioInventario | null>(null)
+  const cambios = obtenerCambiosInventario().slice(0, 5)
+
+  function alGuardar(cambio: CambioInventario) {
+    setUltimoCambio(cambio)
+    setEditando(null)
+  }
 
   return (
-    <AdminSeccion titulo="Inventario" descripcion="Disponibilidad de cada libro por sucursal.">
+    <AdminSeccion
+      titulo="Inventario"
+      descripcion="Disponibilidad de cada libro por sucursal. Los cambios se guardan como simulación en este navegador; el índice de Algolia no se modifica."
+    >
+      {ultimoCambio && (
+        <div className="checkout-banner admin-confirmacion" role="status">
+          <p>
+            Inventario actualizado: <strong>{ultimoCambio.titulo}</strong> en {nombreSucursal(ultimoCambio.sucursal)} pasó
+            de <strong>{ultimoCambio.anterior}</strong> a <strong>{ultimoCambio.nuevo}</strong> unidades.
+          </p>
+          <button type="button" className="admin-confirmacion__cerrar" onClick={() => setUltimoCambio(null)} aria-label="Cerrar aviso">×</button>
+        </div>
+      )}
+
       <form className="admin-filtros admin-filtros--simple" onSubmit={(evento) => evento.preventDefault()} role="search">
         <div className="checkout-field">
           <label htmlFor="admin-buscar-inventario">Buscar</label>
@@ -64,6 +90,7 @@ export default function AdminInventario() {
                     <th key={sucursal.id} scope="col" className="admin-tabla__numero">{sucursal.nombre}</th>
                   ))}
                   <th scope="col" className="admin-tabla__numero">Total</th>
+                  <th scope="col">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -83,6 +110,11 @@ export default function AdminInventario() {
                         )
                       })}
                       <td className="admin-tabla__numero"><strong>{total}</strong></td>
+                      <td>
+                        <button type="button" className="admin-accion" onClick={() => setEditando(producto)}>
+                          Modificar
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -92,6 +124,24 @@ export default function AdminInventario() {
 
           <AdminPaginacion pagina={pagina} totalPaginas={datos.totalPaginas} onCambiar={setPagina} />
         </>
+      )}
+
+      {cambios.length > 0 && (
+        <div className="admin-cambios">
+          <h3 className="admin-cambios__titulo">Últimos cambios de inventario</h3>
+          <ul>
+            {cambios.map((cambio) => (
+              <li key={cambio.fecha + cambio.productoId + cambio.sucursal}>
+                <strong>{cambio.titulo}</strong> · {nombreSucursal(cambio.sucursal)}: {cambio.anterior} → {cambio.nuevo}
+                <span className="admin-tabla__sub">{formatDate(cambio.fecha)} · {cambio.admin}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {editando && (
+        <AdminEditarStock key={editando.objectID} producto={editando} onCerrar={() => setEditando(null)} onGuardado={alGuardar} />
       )}
     </AdminSeccion>
   )
