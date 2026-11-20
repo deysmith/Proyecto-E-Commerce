@@ -263,7 +263,3 @@ h1 em { color: var(--color-accent-strong); font-weight: 500; }
 .menu-usuario__salir { color: #b34b30; }
 .menu-usuario__ingresar { color: var(--color-primary); }
 .menu-usuario__salir:hover, .menu-usuario__ingresar:hover { background: var(--color-bg); }
-
-@media (max-width: 785px) {
-  .header-account__usuario { display: none; }
-}

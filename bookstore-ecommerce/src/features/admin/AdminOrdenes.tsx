@@ -15,6 +15,13 @@ const ESTADOS_ORDEN = Object.keys(ETIQUETA_ESTADO_ORDEN) as EstadoOrden[]
 const ESTADOS_PAGO = Object.keys(ETIQUETA_ESTADO_PAGO) as EstadoPago[]
 const TIPOS_CLIENTE: TipoCliente[] = ["CUSTOMER", "BUSINESS", "INVITADO"]
 
+// Fecha corta para la tabla (ej. 19/11/26, 10:25 p. m.); la fecha completa se ve al pasar el mouse
+function fechaCorta(fechaIso: string) {
+  const fecha = new Date(fechaIso)
+  if (Number.isNaN(fecha.getTime())) return ""
+  return new Intl.DateTimeFormat("es-CR", { dateStyle: "short", timeStyle: "short" }).format(fecha)
+}
+
 /**
  * Sucursales de las que salen los libros de la orden.
  */
@@ -125,7 +132,7 @@ export default function AdminOrdenes() {
                 <tr>
                   <th scope="col">Número</th>
                   <th scope="col">Fecha</th>
-                  <th scope="col">Cliente</th>
+                  <th scope="col" className="admin-tabla__izq">Cliente</th>
                   <th scope="col">Tipo de cliente</th>
                   <th scope="col">Empresa</th>
                   <th scope="col">Sucursal</th>
@@ -138,8 +145,8 @@ export default function AdminOrdenes() {
                 {datos.ordenes.map((orden) => (
                   <tr key={orden.numero}>
                     <td className="admin-tabla__orden">{orden.numero}</td>
-                    <td>{formatDate(orden.fecha)}</td>
-                    <td>
+                    <td className="admin-tabla__fecha" title={formatDate(orden.fecha)}>{fechaCorta(orden.fecha)}</td>
+                    <td className="admin-tabla__izq">
                       <strong>{orden.comprador.nombreCompleto}</strong>
                       <span className="admin-tabla__sub">{orden.comprador.correo}</span>
                     </td>
