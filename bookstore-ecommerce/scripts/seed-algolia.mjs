@@ -97,7 +97,6 @@ async function crearIndiceOrdenes() {
         "numero",
         "comprador.nombreCompleto",
         "comprador.correo",
-        "comprador.correo",
         "empresa.nombre"
       ],
       attributesForFaceting: [
